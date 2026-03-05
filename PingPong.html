@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        canvas {
+            display: block;
+            background-color: #000;
+            border: 3px solid #fff;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .info {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .controls {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .button-group {
+            margin-top: 15px;
+        }
+
+        button {
+            background-color: #667eea;
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #764ba2;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏓 PONG 🏓</h1>
+        <canvas id="pongCanvas" width="800" height="400"></canvas>
+        <div class="info">
+            <strong>Jugador:</strong> <span id="playerScore">0</span> | <strong>IA:</strong> <span id="aiScore">0</span>
+        </div>
+        <div class="controls">
+            <p><strong>Controles:</strong></p>
+            <p>↑ W o Flecha Arriba - Subir</p>
+            <p>↓ S o Flecha Abajo - Bajar</p>
+        </div>
+        <div class="button-group">
+            <button onclick="location.reload()">Reiniciar Juego</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('pongCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Configuración del juego
+        const PADDLE_WIDTH = 15;
+        const PADDLE_HEIGHT = 100;
+        const BALL_SIZE = 8;
+        const PADDLE_SPEED = 5;
+        const BALL_SPEED = 4;
+
+        // Objetos del juego
+        const player = {
+            x: 10,
+            y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+            width: PADDLE_WIDTH,
+            height: PADDLE_HEIGHT,
+            dy: 0,
+            score: 0
+        };
+
+        const ai = {
+            x: canvas.width - PADDLE_WIDTH - 10,
+            y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+            width: PADDLE_WIDTH,
+            height: PADDLE_HEIGHT,
+            dy: 0,
+            score: 0
+        };
+
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            size: BALL_SIZE,
+            dx: BALL_SPEED,
+            dy: BALL_SPEED
+        };
+
+        const keys = {
+            w: false,
+            s: false,
+            arrowUp: false,
+            arrowDown: false
+        };
+
+        // Event listeners para controles
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w') keys.w = true;
+            if (key === 's') keys.s = true;
+            if (e.key === 'ArrowUp') keys.arrowUp = true;
+            if (e.key === 'ArrowDown') keys.arrowDown = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w') keys.w = false;
+            if (key === 's') keys.s = false;
+            if (e.key === 'ArrowUp') keys.arrowUp = false;
+            if (e.key === 'ArrowDown') keys.arrowDown = false;
+        });
+
+        // Actualizar posición del jugador
+        function updatePlayer() {
+            if (keys.w || keys.arrowUp) {
+                player.y = Math.max(0, player.y - PADDLE_SPEED);
+            }
+            if (keys.s || keys.arrowDown) {
+                player.y = Math.min(canvas.height - player.height, player.y + PADDLE_SPEED);
+            }
+        }
+
+        // IA del oponente
+        function updateAI() {
+            const aiCenter = ai.y + ai.height / 2;
+            const ballCenter = ball.y;
+
+            if (aiCenter < ballCenter - 35) {
+                ai.y = Math.min(canvas.height - ai.height, ai.y + PADDLE_SPEED * 0.85);
+            } else if (aiCenter > ballCenter + 35) {
+                ai.y = Math.max(0, ai.y - PADDLE_SPEED * 0.85);
+            }
+        }
+
+        // Actualizar posición de la pelota
+        function updateBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Rebotar en arriba y abajo
+            if (ball.y - ball.size < 0 || ball.y + ball.size > canvas.height) {
+                ball.dy = -ball.dy;
+                ball.y = Math.max(ball.size, Math.min(canvas.height - ball.size, ball.y));
+            }
+
+            // Colisión con palas
+            // Pala del jugador
+            if (ball.dx < 0 &&
+                ball.x - ball.size < player.x + player.width &&
+                ball.y > player.y &&
+                ball.y < player.y + player.height) {
+                ball.dx = -ball.dx;
+                ball.x = player.x + player.width + ball.size;
+                
+                // Angulo de rebote según donde golpee la pelota
+                const collidePoint = ball.y - (player.y + player.height / 2);
+                const collideNorm = collidePoint / (player.height / 2);
+                const angle = collideNorm * 45 * (Math.PI / 180);
+                ball.dy = BALL_SPEED * Math.sin(angle);
+            }
+
+            // Pala de la IA
+            if (ball.dx > 0 &&
+                ball.x + ball.size > ai.x &&
+                ball.y > ai.y &&
+                ball.y < ai.y + ai.height) {
+                ball.dx = -ball.dx;
+                ball.x = ai.x - ball.size;
+                
+                // Angulo de rebote según donde golpee la pelota
+                const collidePoint = ball.y - (ai.y + ai.height / 2);
+                const collideNorm = collidePoint / (ai.height / 2);
+                const angle = collideNorm * 45 * (Math.PI / 180);
+                ball.dy = BALL_SPEED * Math.sin(angle);
+            }
+
+            // Puntos
+            if (ball.x < 0) {
+                ai.score++;
+                resetBall();
+            }
+            if (ball.x > canvas.width) {
+                player.score++;
+                resetBall();
+            }
+        }
+
+        // Reiniciar pelota
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.dx = BALL_SPEED * (Math.random() > 0.5 ? 1 : -1);
+            ball.dy = BALL_SPEED * (Math.random() * 2 - 1);
+        }
+
+        // Dibujar rectángulo
+        function drawRect(x, y, width, height, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+        }
+
+        // Dibujar círculo
+        function drawCircle(x, y, radius, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Renderizar juego
+        function draw() {
+            // Fondo
+            drawRect(0, 0, canvas.width, canvas.height, '#000');
+
+            // Línea central punteada
+            ctx.strokeStyle = '#fff';
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Palas
+            drawRect(player.x, player.y, player.width, player.height, '#00ff00');
+            drawRect(ai.x, ai.y, ai.width, ai.height, '#ff00ff');
+
+            // Pelota
+            drawCircle(ball.x, ball.y, ball.size, '#ffff00');
+        }
+
+        // Actualizar puntuación en pantalla
+        function updateScore() {
+            document.getElementById('playerScore').textContent = player.score;
+            document.getElementById('aiScore').textContent = ai.score;
+        }
+
+        // Loop principal
+        function gameLoop() {
+            updatePlayer();
+            updateAI();
+            updateBall();
+            draw();
+            updateScore();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Iniciar juego
+        gameLoop();
+    </script>
+</body>
+</html>
