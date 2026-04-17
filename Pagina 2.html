@@ -1,0 +1,2579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Love Swipe — Conecta. Desliza. Enamórate.</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'serif'],
+            body: ['Outfit', 'ui-sans-serif', 'system-ui']
+          },
+          colors: {
+            bg: '#FAF7F2',
+            bg2: '#F2EDE4',
+            card: '#FFFFFF',
+            plum: '#2D1B33',
+            plum2: '#4A2D55',
+            rose: '#E8637A',
+            rose2: '#F09AAA',
+            gold: '#C8923A',
+            gold2: '#E8B96A',
+            sage: '#6B8E7A',
+            text2: '#6B5C70',
+            text3: '#AFA0B4',
+          },
+          boxShadow: {
+            soft: '0 4px 32px rgba(45,27,51,.10)',
+            softlg: '0 20px 60px rgba(45,27,51,.18)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Minimal CSS: only mechanics (pages/swipe/stamps/animations/toast/particles) -->
+  <style>
+    :root { --nav-h: 66px; }
+    html, body { height: 100%; }
+    body { font-family: Outfit, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#FAF7F2; overflow-x:hidden; }
+
+    /* Page system (router relies on .page + .active) */
+    .page {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      min-height: 100vh;
+      padding-top: var(--nav-h);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s cubic-bezier(.25,.46,.45,.94);
+    }
+    .page.active {
+      position: relative;
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* Animations */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes heartPop { 0%{transform:scale(0) rotate(-20deg)} 60%{transform:scale(1.3) rotate(5deg)} 100%{transform:scale(1) rotate(0)} }
+    @keyframes typeDot { 0%,80%,100%{transform:translateY(0);opacity:.4} 40%{transform:translateY(-5px);opacity:1} }
+    @keyframes toastIn { from{opacity:0;transform:translate(-50%,12px)} to{opacity:1;transform:translate(-50%,0)} }
+    @keyframes particleUp { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-80px) scale(.3)} }
+
+    /* Swipe deck mechanics */
+    .deck-area { position:relative; width:360px; height:540px; margin:0 auto; }
+    .swipe-card { position:absolute; inset:0; user-select:none; will-change:transform; }
+    .swipe-card[data-pos="0"] { z-index: 3; cursor: grab; }
+    .swipe-card[data-pos="0"]:active { cursor: grabbing; }
+    .swipe-card[data-pos="1"] { transform:scale(.95) translateY(12px); z-index:2; opacity:.85; pointer-events:none; }
+    .swipe-card[data-pos="2"] { transform:scale(.90) translateY(24px); z-index:1; opacity:.65; pointer-events:none; }
+
+    /* Stamps */
+    .stamp {
+      position:absolute; z-index: 20; pointer-events:none;
+      font-family: "Playfair Display", serif;
+      font-size: 1.8rem; font-weight: 900;
+      padding: .15rem .6rem;
+      border-radius: 10px;
+      border: 3px solid;
+      opacity: 0;
+      transition: opacity .1s;
+      letter-spacing: .02em;
+      text-shadow: 0 2px 10px rgba(0,0,0,.18);
+      backdrop-filter: blur(6px);
+    }
+    .stamp-like { top: 18px; left: 14px; color:#4AE584; border-color:#4AE584; transform:rotate(-14deg); background:rgba(0,0,0,.12); }
+    .stamp-nope { top: 18px; right: 14px; color:#FF4D6A; border-color:#FF4D6A; transform:rotate(14deg); background:rgba(0,0,0,.12); }
+    .stamp-super { top: 40%; left:50%; transform:translateX(-50%) rotate(-4deg); color:#4A9EFF; border-color:#4A9EFF; background:rgba(0,0,0,.12); }
+
+    /* Match overlay inside card */
+    .card-match {
+      position:absolute; inset:0; z-index: 30;
+      opacity:0; pointer-events:none;
+      transition: opacity .35s cubic-bezier(.25,.46,.45,.94);
+    }
+    .card-match.show { opacity:1; pointer-events:all; }
+
+    /* Toast + particles */
+    #toast {
+      position:fixed; bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      opacity:0; pointer-events:none;
+      transition: .3s cubic-bezier(.25,.46,.45,.94);
+      z-index: 9999;
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); animation: toastIn .3s cubic-bezier(.25,.46,.45,.94); }
+    .particle { position:fixed; pointer-events:none; animation: particleUp 2.5s ease forwards; z-index: 9998; }
+
+    /* Small scrollbar polish */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,.04); }
+    ::-webkit-scrollbar-thumb { background: rgba(232,99,122,.35); border-radius: 999px; }
+
+    /* Fix for chat input being blocked */
+    #cwInput {
+      pointer-events: all !important;
+      position: relative;
+      z-index: 11 !important;
+    }
+
+    #chatWindow {
+      pointer-events: all !important;
+      z-index: 10 !important;
+    }
+
+    #chatWindow input,
+    #chatWindow button {
+      pointer-events: auto !important;
+    }
+  </style>
+</head>
+
+<body class="bg-bg text-plum">
+
+  <!-- NAVBAR -->
+  <nav id="navbar" class="fixed inset-x-0 top-0 z-[500] h-[66px] border-b border-black/5 bg-bg/80 backdrop-blur-xl">
+    <div class="mx-auto flex h-full max-w-6xl items-center justify-between px-4 sm:px-6">
+
+      <div class="flex items-center gap-3">
+        <button class="font-display text-xl font-black tracking-tight text-plum" onclick="showSection('home')">
+          Love<span class="text-rose italic">Swipe</span>
+        </button>
+
+        <!-- Tabs (desktop) + animated indicator -->
+        <div id="navTabs" class="relative hidden items-center gap-1 rounded-full border border-black/5 bg-bg2 p-1 md:flex">
+          <div id="navIndicator"
+               class="absolute left-1 top-1 h-[34px] rounded-full bg-white shadow-soft transition-all duration-300"
+               style="width:0px; transform:translateX(0px);"></div>
+
+          <button class="nav-tab relative z-10 rounded-full px-4 py-2 text-xs font-extrabold text-plum"
+                  data-page="home" onclick="showSection('home')">🏠 <span class="ml-1">Inicio</span></button>
+          <button class="nav-tab relative z-10 rounded-full px-4 py-2 text-xs font-semibold text-text2 hover:text-plum"
+                  data-page="explore" onclick="showSection('explore')">💫 <span class="ml-1">Explorar</span></button>
+          <button class="nav-tab relative z-10 rounded-full px-4 py-2 text-xs font-semibold text-text2 hover:text-plum"
+                  data-page="matches" onclick="showSection('matches')">❤️ <span class="ml-1">Matches</span></button>
+          <button class="nav-tab relative z-10 rounded-full px-4 py-2 text-xs font-semibold text-text2 hover:text-plum"
+                  data-page="chat" onclick="showSection('chat')">💬 <span class="ml-1">Chats</span></button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-300 to-orange-400 px-4 py-2 text-xs font-extrabold text-black shadow-soft hover:brightness-105 active:scale-[.98]"
+                onclick="showSection('premium')">
+          ⭐ Premium
+        </button>
+
+        <button class="hidden rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-bold text-text2 hover:text-plum md:inline-flex"
+                onclick="openModal('login')">
+          Entrar
+        </button>
+
+        <button class="hidden rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-bold text-text2 hover:text-plum md:inline-flex"
+                id="myProfileBtn" style="display:none" onclick="showSection('myprofile')">
+          Mi perfil
+        </button>
+
+        <button class="hidden rounded-full bg-gradient-to-r from-rose to-rose-600 px-4 py-2 text-xs font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98] md:inline-flex"
+                onclick="openModal('register')">
+          Empezar gratis ❤️
+        </button>
+
+        <button class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border border-black/10 bg-white/70"
+                id="hamburger" onclick="openDrawer()" aria-label="Abrir menú">
+          <span class="text-lg">☰</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile drawer -->
+  <div class="fixed top-0 right-[-290px] bottom-0 z-[600] w-[290px] bg-white shadow-softlg transition-[right] duration-300"
+       id="drawer">
+    <div class="h-[66px] border-b border-black/5 bg-bg/70 backdrop-blur-xl"></div>
+    <div class="p-4">
+      <button class="mb-2 w-full rounded-2xl border border-black/5 bg-bg2 px-4 py-3 text-left text-sm font-bold text-plum hover:bg-white"
+              onclick="showSection('home');closeDrawer()">🏠 Inicio</button>
+      <button class="mb-2 w-full rounded-2xl border border-black/5 bg-bg2 px-4 py-3 text-left text-sm font-bold text-plum hover:bg-white"
+              onclick="showSection('explore');closeDrawer()">💫 Explorar</button>
+      <button class="mb-2 w-full rounded-2xl border border-black/5 bg-bg2 px-4 py-3 text-left text-sm font-bold text-plum hover:bg-white"
+              onclick="showSection('matches');closeDrawer()">❤️ Mis Matches</button>
+      <button class="mb-2 w-full rounded-2xl border border-black/5 bg-bg2 px-4 py-3 text-left text-sm font-bold text-plum hover:bg-white"
+              onclick="showSection('chat');closeDrawer()">💬 Chats</button>
+
+      <button class="mb-2 w-full rounded-2xl bg-gradient-to-r from-amber-300 to-orange-400 px-4 py-3 text-left text-sm font-extrabold text-black shadow-soft hover:brightness-105"
+              onclick="showSection('premium');closeDrawer()">⭐ Premium</button>
+
+      <button class="mb-2 w-full rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-4 py-3 text-left text-sm font-extrabold text-white shadow-soft"
+              onclick="openModal('register');closeDrawer()">🚀 Empezar gratis</button>
+
+      <div class="my-4 h-px bg-black/5"></div>
+
+      <button class="mb-2 w-full rounded-2xl border border-black/5 bg-bg2 px-4 py-3 text-left text-sm font-bold text-plum hover:bg-white"
+              onclick="showSection('privacy');closeDrawer()">🔒 Privacidad</button>
+      <button class="mb-2 w-full rounded-2xl border border-black/5 bg-bg2 px-4 py-3 text-left text-sm font-bold text-plum hover:bg-white"
+              onclick="showSection('contact');closeDrawer()">📞 Contacto</button>
+      <button class="mb-2 w-full rounded-2xl border border-black/5 bg-bg2 px-4 py-3 text-left text-sm font-bold text-plum hover:bg-white"
+              onclick="showSection('help');closeDrawer()">❓ Ayuda</button>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-[595] hidden bg-black/40 backdrop-blur-[2px]" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+  <div id="app">
+    <!-- HOME -->
+    <section class="page active" id="page-home">
+      <div class="bg-[radial-gradient(1200px_circle_at_20%_10%,rgba(232,99,122,.18),transparent_45%),radial-gradient(900px_circle_at_90%_20%,rgba(200,146,58,.14),transparent_40%),linear-gradient(160deg,#FAF7F2_0%,#F5EEE6_50%,#F0E4D8_100%)]">
+        <div class="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 pb-14 pt-20 sm:px-6 lg:grid-cols-2 lg:items-center">
+          <div style="animation:fadeUp .6s ease both">
+            <div class="inline-flex items-center gap-2 rounded-full border border-rose/30 bg-rose/10 px-4 py-2 text-[11px] font-extrabold tracking-widest text-rose">
+              <span class="h-2 w-2 animate-pulse rounded-full bg-rose"></span>
+              APP DE CITAS Nº 1 EN ESPAÑA
+            </div>
+
+            <h1 class="mt-6 font-display text-4xl font-black leading-[1.05] tracking-tight text-plum sm:text-6xl">
+              Conecta.<br />
+              Desliza.<br />
+              <span class="italic text-rose">Enamórate.</span>
+            </h1>
+
+            <p class="mt-5 max-w-xl text-base leading-7 text-text2">
+              Perfiles auténticos, matches reales y conversaciones que importan. El amor empieza con un swipe.
+            </p>
+
+            <div class="mt-7 flex flex-wrap gap-3">
+              <button class="rounded-full bg-gradient-to-r from-rose to-rose-600 px-6 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                      onclick="openModal('register')">
+                Encuentra tu match ❤️
+              </button>
+              <button class="rounded-full border border-black/10 bg-white/70 px-6 py-3 text-sm font-bold text-plum hover:bg-white"
+                      onclick="showSection('explore')">
+                Ver perfiles →
+              </button>
+              <button class="rounded-full border border-black/10 bg-white/70 px-6 py-3 text-sm font-bold text-plum hover:bg-white"
+                      onclick="showSection('premium')">
+                Actualizar a Premium ⭐
+              </button>
+            </div>
+
+            <div class="mt-10 grid grid-cols-2 gap-4 border-t border-black/5 pt-6 sm:grid-cols-4">
+              <div>
+                <div class="font-display text-3xl font-black text-plum">4.2M+</div>
+                <div class="mt-1 text-[11px] font-extrabold tracking-widest text-text3">USUARIOS ACTIVOS</div>
+              </div>
+              <div>
+                <div class="font-display text-3xl font-black text-plum">98K</div>
+                <div class="mt-1 text-[11px] font-extrabold tracking-widest text-text3">MATCHES HOY</div>
+              </div>
+              <div>
+                <div class="font-display text-3xl font-black text-plum">12K</div>
+                <div class="mt-1 text-[11px] font-extrabold tracking-widest text-text3">PAREJAS</div>
+              </div>
+              <div>
+                <div class="font-display text-3xl font-black text-plum">4.9★</div>
+                <div class="mt-1 text-[11px] font-extrabold tracking-widest text-text3">APP STORE</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: phone mockup -->
+          <div class="hidden lg:block" style="animation:fadeUp .7s .15s ease both">
+            <div class="mx-auto w-[320px] rounded-[44px] bg-plum p-4 shadow-softlg" style="animation:float 5s ease-in-out infinite">
+              <div class="flex items-center justify-between px-2 py-2">
+                <div class="font-display text-sm font-black text-white">Love<span class="text-rose2 italic">Swipe</span></div>
+                <div class="text-[11px] font-bold text-white/50">🔔 ×3</div>
+              </div>
+
+              <div class="relative mt-2 overflow-hidden rounded-3xl">
+                <div class="h-[280px] w-full bg-gradient-to-br from-fuchsia-500 to-violet-700"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-6xl" id="phoneCardBg">
+                  <span id="phoneCardEmoji">👩‍🦱</span>
+                </div>
+                <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+                <div class="absolute bottom-3 left-3 right-3">
+                  <div class="font-display text-lg font-black text-white" id="phoneCardName">Valentina, 24</div>
+                  <div class="text-[12px] font-semibold text-white/70" id="phoneCardMeta">0.8 km · Barcelona</div>
+                </div>
+              </div>
+
+              <div class="mt-3 flex items-center justify-center gap-3">
+                <button class="h-12 w-12 rounded-full border border-rose/30 bg-white/10 text-xl font-black text-rose2 hover:scale-105 active:scale-95"
+                        onclick="phoneSwiped('left')">✕</button>
+                <button class="h-14 w-14 rounded-full bg-gradient-to-r from-rose to-rose-600 text-2xl font-black text-white shadow-soft hover:scale-105 active:scale-95"
+                        onclick="phoneSwiped('right')">❤</button>
+                <button class="h-12 w-12 rounded-full border border-amber-300/30 bg-white/10 text-xl font-black text-amber-200 hover:scale-105 active:scale-95"
+                        onclick="phoneSwiped('super')">★</button>
+              </div>
+
+              <div class="mt-4 flex flex-col gap-2 px-2 pb-1">
+                <div class="rounded-xl bg-white/10 px-3 py-2 text-[11px] font-semibold text-white/60">💬 Valentina: "¡Hola! Vi que también te gusta..."</div>
+                <div class="rounded-xl bg-white/5 px-3 py-2 text-[11px] font-semibold text-white/40">❤️ Nuevo match con Lucía</div>
+              </div>
+
+              <div class="pointer-events-none absolute -right-4 -top-3 rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-3 py-2 text-[11px] font-extrabold text-white shadow-soft">
+                💕 ¡Match! Valentina te ha dado like
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mx-auto max-w-6xl px-4 pb-14 sm:px-6" style="animation:fadeUp .6s .25s ease both">
+          <div class="flex items-center gap-3 text-[11px] font-extrabold tracking-widest text-rose">
+            <span class="h-[2px] w-6 bg-rose"></span> FUNCIONALIDADES
+          </div>
+          <h2 class="mt-3 font-display text-3xl font-black text-plum sm:text-4xl">
+            Todo lo que necesitas para <span class="italic text-rose">conectar</span>
+          </h2>
+
+          <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-softlg">
+              <div class="text-3xl">💫</div>
+              <h3 class="mt-3 font-display text-lg font-black text-plum">Smart Matching</h3>
+              <p class="mt-2 text-sm leading-6 text-text2">Nuestro algoritmo aprende de tus preferencias y te muestra perfiles que realmente te gustarán.</p>
+            </div>
+
+            <div class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-softlg">
+              <div class="text-3xl">⚡</div>
+              <h3 class="mt-3 font-display text-lg font-black text-plum">Super Like</h3>
+              <p class="mt-2 text-sm leading-6 text-text2">¿Alguien te ha encantado? Usa el Super Like para destacar antes del match.</p>
+            </div>
+
+            <div class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-softlg">
+              <div class="text-3xl">💬</div>
+              <h3 class="mt-3 font-display text-lg font-black text-plum">Chat en tiempo real</h3>
+              <p class="mt-2 text-sm leading-6 text-text2">Mensajes, emojis y GIFs. Conversaciones naturales y sin complicaciones.</p>
+            </div>
+
+            <div class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-softlg">
+              <div class="text-3xl">📍</div>
+              <h3 class="mt-3 font-display text-lg font-black text-plum">Radar local</h3>
+              <p class="mt-2 text-sm leading-6 text-text2">Ve quién está online cerca de ti ahora mismo. Conexiones en tiempo real.</p>
+            </div>
+
+            <div class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-softlg">
+              <div class="text-3xl">🛡️</div>
+              <h3 class="mt-3 font-display text-lg font-black text-plum">Perfiles verificados</h3>
+              <p class="mt-2 text-sm leading-6 text-text2">Verificación por vídeo en directo. Tu seguridad, nuestra prioridad.</p>
+            </div>
+
+            <div class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-softlg">
+              <div class="text-3xl">🚀</div>
+              <h3 class="mt-3 font-display text-lg font-black text-plum">Boost de visibilidad</h3>
+              <p class="mt-2 text-sm leading-6 text-text2">Multiplica tu presencia ×10 durante 30 minutos. Más matches en horas punta.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="bg-plum">
+          <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+            <div class="text-[11px] font-extrabold tracking-widest text-rose2">HISTORIAS REALES</div>
+            <h2 class="mt-3 font-display text-3xl font-black text-white sm:text-4xl">
+              El amor <span class="italic text-rose2">sucede</span> aquí
+            </h2>
+
+            <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-soft">
+                <div class="font-display text-4xl font-black text-rose2/60">"</div>
+                <p class="mt-2 text-sm italic leading-6 text-white/70">No creía en las apps de citas, pero Love Swipe me sorprendió. Ahora llevamos 8 meses juntos.</p>
+                <div class="mt-5 flex items-center gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-lg">👩‍🦋</div>
+                  <div>
+                    <div class="text-sm font-bold text-white">Carmen, 28</div>
+                    <div class="text-xs font-semibold text-rose2">❤️ Match con Alejandro</div>
+                    <div class="text-xs font-bold text-yellow-300">★★★★★</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-soft">
+                <div class="font-display text-4xl font-black text-rose2/60">"</div>
+                <p class="mt-2 text-sm italic leading-6 text-white/70">El algoritmo es increíblemente preciso. ¡Una semana y encontré pareja!</p>
+                <div class="mt-5 flex items-center gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-lg">👨‍🎸</div>
+                  <div>
+                    <div class="text-sm font-bold text-white">David, 31</div>
+                    <div class="text-xs font-semibold text-rose2">❤️ Match con Laura</div>
+                    <div class="text-xs font-bold text-yellow-300">★★★★★</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-soft">
+                <div class="font-display text-4xl font-black text-rose2/60">"</div>
+                <p class="mt-2 text-sm italic leading-6 text-white/70">Me mudé a Barcelona y Love Swipe me ayudó a conectar. ¡Ahora tengo pareja y amigos!</p>
+                <div class="mt-5 flex items-center gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-lg">👩‍💻</div>
+                  <div>
+                    <div class="text-sm font-bold text-white">Ana, 25</div>
+                    <div class="text-xs font-semibold text-rose2">❤️ Match con Miguel</div>
+                    <div class="text-xs font-bold text-yellow-300">★★★★★</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+          <div class="rounded-[32px] bg-gradient-to-br from-plum to-plum2 p-10 text-center shadow-softlg">
+            <h2 class="font-display text-3xl font-black text-white sm:text-4xl">
+              ¿Y tú? <span class="italic text-rose2">¿Cuándo empiezas?</span>
+            </h2>
+            <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-white/60">
+              Únete gratis y haz match hoy mismo. Sin tarjeta de crédito. Sin excusas.
+            </p>
+            <button class="mt-7 rounded-full bg-gradient-to-r from-rose to-rose-600 px-7 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                    onclick="openModal('register')">
+              Empezar gratis ahora ❤️
+            </button>
+          </div>
+
+          <footer class="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-black/5 pt-6">
+            <div class="font-display text-lg font-black text-plum">Love<span class="text-rose italic">Swipe</span></div>
+            <div class="flex flex-wrap gap-4 text-xs font-bold text-text3">
+              <button class="hover:text-plum" onclick="showSection('privacy')">Privacidad</button>
+              <button class="hover:text-plum" onclick="showSection('help')">Ayuda</button>
+              <button class="hover:text-plum" onclick="showSection('contact')">Contacto</button>
+            </div>
+            <div class="text-xs font-semibold text-text3">© 2026 Love Swipe · Hecho con ❤️ en España</div>
+          </footer>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPLORE -->
+    <section class="page" id="page-explore">
+      <div class="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+        <div class="mx-auto flex max-w-md items-center justify-between">
+          <div class="font-display text-2xl font-black text-plum">Explorar <span class="italic text-rose">cerca</span></div>
+          <button class="rounded-2xl border border-black/5 bg-white px-4 py-2 text-xs font-extrabold text-text2 shadow-soft hover:text-plum" id="filtersBtn"
+                  onclick="Filters.openUpgrade()">⚙️ Filtros</button>
+        </div>
+
+        <div class="mt-6 hidden rounded-3xl border border-black/5 bg-white p-6 shadow-soft" id="premiumFilterSection">
+          <div class="grid gap-4">
+            <div class="flex flex-col gap-2">
+              <div class="text-sm font-bold text-plum">Filtros Premium</div>
+              <div class="text-sm font-semibold text-text2">Edad, distancia, intereses y opciones avanzadas solo para usuarios Premium.</div>
+            </div>
+            <div id="premiumFilterForm"></div>
+            <div id="premiumFilterActions"></div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <div class="deck-area" id="deckArea"></div>
+
+          <div id="swipeStatus" class="mt-3 h-6 text-center text-xs font-bold text-text3"></div>
+
+          <div class="mt-6 flex items-center justify-center gap-3">
+            <button class="h-11 w-11 rounded-full border border-amber-300/30 bg-white shadow-soft hover:scale-105 active:scale-95"
+                    onclick="Swipe.rewind()" title="Deshacer">↩</button>
+
+            <button class="h-14 w-14 rounded-full border border-rose/30 bg-white text-xl font-black text-rose shadow-soft hover:scale-105 active:scale-95"
+                    onclick="Swipe.doSwipe('left')" title="Pasar">✕</button>
+
+            <button class="h-16 w-16 rounded-full bg-gradient-to-r from-rose to-rose-600 text-2xl font-black text-white shadow-soft hover:shadow-softlg hover:scale-105 active:scale-95"
+                    onclick="Swipe.doSwipe('right')" title="Like">❤</button>
+
+            <button class="h-11 w-11 rounded-full border border-sky-300/30 bg-white text-lg font-black text-sky-500 shadow-soft hover:scale-105 active:scale-95"
+                    onclick="Swipe.doSwipe('super')" title="Super Like">★</button>
+
+            <button class="h-11 w-11 rounded-full border border-violet-300/30 bg-white text-lg font-black text-violet-500 shadow-soft hover:scale-105 active:scale-95"
+                    onclick="Swipe.boost()" title="Boost">⚡</button>
+          </div>
+
+          <div class="mt-4 text-center text-xs font-semibold text-text3">Arrastra la tarjeta o usa los botones</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MATCHES -->
+    <section class="page" id="page-matches">
+      <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <div class="text-[11px] font-extrabold tracking-widest text-rose">TUS CONEXIONES</div>
+        <h2 class="mt-2 font-display text-3xl font-black text-plum">Tus <span class="italic">Matches</span></h2>
+        <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" id="matchesGrid"></div>
+      </div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="page" id="page-chat">
+      <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        <div class="grid h-[calc(100vh-66px-24px)] grid-cols-1 overflow-hidden rounded-3xl border border-black/5 bg-white shadow-softlg md:grid-cols-[320px_1fr]">
+
+          <!-- Sidebar -->
+          <aside class="flex flex-col border-b border-black/5 md:border-b-0 md:border-r md:border-black/5">
+            <div class="flex items-center justify-between px-5 py-4">
+              <div class="font-display text-lg font-black text-plum">Mensajes</div>
+              <span class="rounded-full bg-gradient-to-r from-rose to-rose-600 px-3 py-1 text-xs font-extrabold text-white" id="sidebarBadge">4</span>
+            </div>
+
+            <div class="border-t border-black/5 px-5 py-4">
+              <div class="text-[11px] font-extrabold tracking-widest text-text3">NUEVOS MATCHES</div>
+              <div class="mt-3 flex gap-3 overflow-x-auto pb-1" id="nmRow"></div>
+            </div>
+
+            <div class="border-t border-black/5 px-5 py-3">
+              <input id="chatSearchInput"
+                     class="h-10 w-full rounded-full border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum placeholder:text-text3 focus:border-rose focus:outline-none"
+                     placeholder="🔍 Buscar..."
+                     oninput="Chat.filterList(this.value)" />
+            </div>
+
+            <div class="min-h-0 flex-1 overflow-y-auto" id="chatList"></div>
+          </aside>
+
+          <!-- Main -->
+          <main class="flex flex-col">
+            <div class="flex min-h-0 flex-1 flex-col" id="chatMain">
+              <div class="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center" id="chatEmpty">
+                <div class="text-5xl opacity-40">💬</div>
+                <div class="font-display text-xl font-black text-text2">Elige una conversación</div>
+                <div class="text-sm font-semibold text-text3">O comienza a chatear con uno de tus matches</div>
+              </div>
+
+              <!-- IMPORTANT: min-h-0 added + sticky header/input so the input never disappears -->
+              <div class="hidden h-full min-h-0 flex-col" id="chatWindow">
+                <!-- Header (sticky) -->
+                <div class="sticky top-0 z-10 flex items-center gap-3 border-b border-black/5 bg-white/90 px-5 py-4 backdrop-blur">
+                  <div class="relative">
+                    <div class="h-11 w-11 overflow-hidden rounded-full bg-bg2" id="cwAv"></div>
+                    <div class="absolute bottom-0 right-0 hidden h-3 w-3 rounded-full border-2 border-white bg-sage" id="cwOnlineDot"></div>
+                  </div>
+
+                  <div class="min-w-0">
+                    <div class="truncate font-display text-lg font-black text-plum" id="cwName"></div>
+                    <div class="text-xs font-bold text-sage" id="cwStatus"></div>
+                  </div>
+
+                  <div class="ml-auto flex items-center gap-2">
+                    <button class="h-9 w-9 rounded-full border border-black/5 bg-bg2 text-sm font-black text-text2 hover:text-plum"
+                            onclick="Chat.viewProfile()" title="Perfil">👤</button>
+                    <button class="h-9 w-9 rounded-full border border-black/5 bg-bg2 text-sm font-black text-text2 hover:text-plum"
+                            onclick="showToast('📞 Solo en la app móvil')" title="Llamar">📞</button>
+                  </div>
+                </div>
+
+                <!-- Messages (only this scrolls) -->
+                <div class="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(900px_circle_at_20%_10%,rgba(232,99,122,.07),transparent_45%),radial-gradient(900px_circle_at_90%_20%,rgba(200,146,58,.06),transparent_40%)] px-5 py-5"
+                     id="cwMsgs"></div>
+
+                <!-- Input (sticky bottom) -->
+                <div class="sticky bottom-0 z-10 border-t border-black/5 bg-white/90 p-3 backdrop-blur">
+                  <div class="flex items-center gap-2">
+                    <button class="h-10 w-10 rounded-full bg-bg2 text-text3 hover:text-plum"
+                            onclick="Chat.showEmojiPicker()">😊</button>
+
+                    <input class="h-10 flex-1 rounded-full border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum placeholder:text-text3 focus:border-rose focus:outline-none"
+                           id="cwInput" placeholder="Escribe un mensaje..."
+                           onkeydown="if(event.key==='Enter')Chat.send()" />
+
+                    <button class="h-10 w-10 rounded-full bg-gradient-to-r from-rose to-rose-600 text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                            onclick="Chat.send()">↑</button>
+                  </div>
+
+                  <div class="mt-2 hidden flex-wrap gap-2 rounded-2xl bg-bg2 p-2" id="emojiPicker">
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('😊')">😊</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('😍')">😍</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('🥰')">🥰</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('❤️')">❤️</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('🔥')">🔥</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('😂')">😂</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('✨')">✨</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('🏄')">🏄</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('☀️')">☀️</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('🎵')">🎵</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('👍')">👍</button>
+                    <button class="rounded-xl bg-white/70 px-3 py-2 text-lg hover:bg-white" onclick="Chat.insertEmoji('👋')">👋</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="page" id="page-profile">
+      <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        <button class="rounded-full border border-black/10 bg-white/70 px-5 py-2 text-sm font-extrabold text-text2 hover:text-plum"
+                id="btnBack" onclick="goBack()">← Volver</button>
+
+        <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
+          <div>
+            <div class="overflow-hidden rounded-3xl bg-bg2 shadow-softlg" id="profPhoto" style="aspect-ratio:.78"></div>
+
+            <div class="mt-4 flex gap-3">
+              <button class="flex-1 rounded-2xl border border-rose/30 bg-white px-4 py-3 text-sm font-extrabold text-rose shadow-soft hover:bg-rose/5"
+                      id="profNope">✕ Pasar</button>
+              <button class="flex-1 rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-4 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                      id="profLike">❤ Like</button>
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 gap-3">
+              <div class="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
+                <div class="text-xs font-extrabold tracking-widest text-text3">DISTANCIA</div>
+                <div class="mt-1 text-sm font-extrabold text-plum" id="profDist">—</div>
+              </div>
+              <div class="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
+                <div class="text-xs font-extrabold tracking-widest text-text3">MATCH</div>
+                <div class="mt-1 text-sm font-extrabold text-plum" id="profMatch">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex flex-wrap items-end gap-3">
+              <div class="font-display text-4xl font-black text-plum" id="profName"></div>
+              <div class="font-display text-2xl font-black text-text2" id="profAge"></div>
+              <div class="rounded-full border border-sage/30 bg-sage/10 px-3 py-1 text-xs font-extrabold text-sage">✓ Verificado</div>
+            </div>
+
+            <div class="mt-2 text-sm font-bold text-text3" id="profCity">📍 —</div>
+
+            <div class="mt-5 rounded-3xl border border-black/5 bg-white p-6 text-sm italic leading-7 text-text2 shadow-soft"
+                 id="profBio"></div>
+
+            <div class="mt-6 text-[11px] font-extrabold tracking-widest text-text3">INTERESES</div>
+            <div class="mt-3 flex flex-wrap gap-2" id="profTags"></div>
+
+            <div class="mt-6 text-[11px] font-extrabold tracking-widest text-text3">DETALLES</div>
+            <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2" id="profDetails"></div>
+
+            <button class="mt-6 w-full rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-5 py-4 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                    id="profChatBtn">💬 Enviar mensaje</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREFERENCES -->
+    <section class="page" id="page-preferences">
+      <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <div class="text-center">
+          <div class="text-[11px] font-extrabold tracking-widest text-rose">PERSONALIZA TU EXPERIENCIA</div>
+          <h2 class="mt-2 font-display text-4xl font-black text-plum">¿Qué <span class="italic">buscas?</span></h2>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3" id="preferencesOptions">
+          <div class="pref-card cursor-pointer rounded-3xl border border-black/5 bg-white p-6 text-center shadow-soft transition hover:-translate-y-1 hover:shadow-softlg"
+               data-value="serious">
+            <div class="text-4xl">💍</div>
+            <h3 class="mt-3 font-display text-lg font-black text-plum">Relación seria</h3>
+            <p class="mt-2 text-sm font-semibold text-text2">Busco una pareja para algo duradero</p>
+          </div>
+
+          <div class="pref-card cursor-pointer rounded-3xl border border-black/5 bg-white p-6 text-center shadow-soft transition hover:-translate-y-1 hover:shadow-softlg"
+               data-value="casual">
+            <div class="text-4xl">🌙</div>
+            <h3 class="mt-3 font-display text-lg font-black text-plum">Algo casual</h3>
+            <p class="mt-2 text-sm font-semibold text-text2">Quiero divertirme y ver qué pasa</p>
+          </div>
+
+          <div class="pref-card cursor-pointer rounded-3xl border border-black/5 bg-white p-6 text-center shadow-soft transition hover:-translate-y-1 hover:shadow-softlg"
+               data-value="friendship">
+            <div class="text-4xl">🤝</div>
+            <h3 class="mt-3 font-display text-lg font-black text-plum">Amistad</h3>
+            <p class="mt-2 text-sm font-semibold text-text2">Busco amigos y conexiones sociales</p>
+          </div>
+        </div>
+
+        <button class="mx-auto mt-8 block rounded-full bg-gradient-to-r from-rose to-rose-600 px-8 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                id="savePreferencesBtn" onclick="savePreferences()">
+          Guardar preferencias
+        </button>
+      </div>
+    </section>
+
+    <!-- MY PROFILE -->
+    <section class="page" id="page-myprofile">
+      <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <button class="rounded-full border border-black/10 bg-white/70 px-5 py-2 text-sm font-extrabold text-text2 hover:text-plum"
+                onclick="goBack()">← Volver</button>
+
+        <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
+          <div>
+            <div class="flex aspect-[.78] items-center justify-center overflow-hidden rounded-3xl bg-bg2 text-6xl shadow-softlg"
+                 id="myProfPhoto">👤</div>
+            <div class="mt-4">
+              <input type="file" id="myPhotoInput" accept="image/*" class="hidden" onchange="updateMyPhoto()">
+              <button class="w-full rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-5 py-4 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                      onclick="document.getElementById('myPhotoInput').click()">
+                Editar foto
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex flex-wrap items-end gap-3">
+              <div class="font-display text-4xl font-black text-plum" id="myProfName">Tu Nombre</div>
+              <div class="font-display text-2xl font-black text-text2" id="myProfAge">25</div>
+              <div class="rounded-full border border-sage/30 bg-sage/10 px-3 py-1 text-xs font-extrabold text-sage">✓ Verificado</div>
+            </div>
+
+            <div class="mt-2 text-sm font-bold text-text3" id="myProfCity">📍 Tu Ciudad</div>
+
+            <div class="mt-5 rounded-3xl border border-black/5 bg-white p-6 text-sm italic leading-7 text-text2 shadow-soft"
+                 id="myProfBio">Cuéntanos sobre ti...</div>
+
+            <div class="mt-6 text-[11px] font-extrabold tracking-widest text-text3">INTERESES</div>
+            <div class="mt-3 flex flex-wrap gap-2" id="myProfTags">
+              <span class="rounded-full border border-black/5 bg-black/[0.04] px-4 py-2 text-xs font-extrabold text-plum">💻 Tech</span>
+              <span class="rounded-full border border-black/5 bg-black/[0.04] px-4 py-2 text-xs font-extrabold text-plum">🎵 Música</span>
+            </div>
+
+            <div class="mt-6 text-[11px] font-extrabold tracking-widest text-text3">DETALLES</div>
+            <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2" id="myProfDetails">
+              <div class="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
+                <div class="text-[11px] font-extrabold tracking-widest text-text3">ALTURA</div>
+                <div class="mt-1 text-sm font-extrabold text-plum">170 cm</div>
+              </div>
+              <div class="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
+                <div class="text-[11px] font-extrabold tracking-widest text-text3">TRABAJO</div>
+                <div class="mt-1 text-sm font-extrabold text-plum">Desarrollador</div>
+              </div>
+            </div>
+
+            <button class="mt-6 w-full rounded-2xl border border-black/10 bg-white/70 px-5 py-4 text-sm font-extrabold text-plum shadow-soft hover:bg-white"
+                    onclick="showToast('Perfil guardado')">
+              Guardar cambios
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREMIUM -->
+    <section class="page" id="page-premium">
+      <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <div class="text-[11px] font-extrabold tracking-widest text-rose">ACTUALIZA TU EXPERIENCIA</div>
+        <h2 class="mt-2 font-display text-4xl font-black text-plum">Descubre <span class="italic">Premium</span></h2>
+
+        <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <div class="text-3xl">❤️</div>
+            <div class="mt-3 font-display text-lg font-black text-plum">Likes ilimitados</div>
+            <div class="mt-2 text-sm font-semibold text-text2">Envía likes sin límites y conecta con más personas.</div>
+          </div>
+          <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <div class="text-3xl">👀</div>
+            <div class="mt-3 font-display text-lg font-black text-plum">Ver quién te dio like</div>
+            <div class="mt-2 text-sm font-semibold text-text2">Descubre quién está interesado antes de hacer match.</div>
+          </div>
+          <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <div class="text-3xl">⚡</div>
+            <div class="mt-3 font-display text-lg font-black text-plum">Boost de perfil</div>
+            <div class="mt-2 text-sm font-semibold text-text2">Aparece primero y aumenta tus matches.</div>
+          </div>
+          <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <div class="text-3xl">🚫</div>
+            <div class="mt-3 font-display text-lg font-black text-plum">Sin anuncios</div>
+            <div class="mt-2 text-sm font-semibold text-text2">Experiencia limpia y sin interrupciones.</div>
+          </div>
+        </div>
+
+        <div class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div class="rounded-3xl border border-black/5 bg-white p-8 shadow-soft">
+            <div class="font-display text-xl font-black text-plum">Premium Mensual</div>
+            <div class="mt-2 font-display text-5xl font-black text-rose">9.99€ <span class="text-lg font-bold text-text2">/mes</span></div>
+            <ul class="mt-6 space-y-2 text-sm font-semibold text-text2">
+              <li>✓ Likes ilimitados</li>
+              <li>✓ Ver likes</li>
+              <li>✓ 1 Boost al mes</li>
+              <li>✓ Sin anuncios</li>
+            </ul>
+            <button class="mt-7 w-full rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-5 py-4 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                    onclick="Premium.addToCart('monthly')">
+              Obtener Premium
+            </button>
+          </div>
+
+          <div class="relative rounded-3xl border border-rose/30 bg-white p-8 shadow-softlg">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-rose to-rose-600 px-4 py-1 text-xs font-extrabold text-white shadow-soft">
+              Más popular
+            </div>
+            <div class="font-display text-xl font-black text-plum">Premium Anual</div>
+            <div class="mt-2 font-display text-5xl font-black text-rose">49.99€ <span class="text-lg font-bold text-text2">/año</span></div>
+            <div class="mt-2 text-sm font-extrabold text-sage">Ahorra 58€</div>
+            <ul class="mt-6 space-y-2 text-sm font-semibold text-text2">
+              <li>✓ Todo lo mensual</li>
+              <li>✓ 12 Boosts al año</li>
+              <li>✓ Soporte prioritario</li>
+            </ul>
+            <button class="mt-7 w-full rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-5 py-4 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                    onclick="Premium.addToCart('yearly')">
+              Obtener Premium
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CART -->
+    <section class="page" id="page-cart">
+      <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <div class="text-[11px] font-extrabold tracking-widest text-rose">TU PEDIDO</div>
+        <h2 class="mt-2 font-display text-4xl font-black text-plum">Carrito de <span class="italic">compra</span></h2>
+
+        <div class="mt-8 space-y-4" id="cartItems"></div>
+
+        <div class="mt-6 rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+          <div class="flex items-center justify-between text-lg font-extrabold text-plum">
+            <span>Total:</span>
+            <span id="cartTotal">0.00€</span>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <button class="rounded-full border border-black/10 bg-white/70 px-6 py-3 text-sm font-extrabold text-plum hover:bg-white"
+                  onclick="goBack()">← Seguir comprando</button>
+          <button class="rounded-full bg-gradient-to-r from-rose to-rose-600 px-6 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                  id="checkoutBtn" onclick="showSection('payment')">Proceder al pago</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAYMENT -->
+    <section class="page" id="page-payment">
+      <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <div class="text-[11px] font-extrabold tracking-widest text-rose">PAGO SEGURO</div>
+        <h2 class="mt-2 font-display text-4xl font-black text-plum">Completa tu <span class="italic">pago</span></h2>
+
+        <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <button class="method-card rounded-3xl border border-black/5 bg-white p-6 text-center font-extrabold text-plum shadow-soft hover:border-rose"
+                  data-method="card" onclick="Payment.selectMethod('card')">💳<div class="mt-2 text-sm">Tarjeta</div></button>
+          <button class="method-card rounded-3xl border border-black/5 bg-white p-6 text-center font-extrabold text-plum shadow-soft hover:border-rose"
+                  data-method="paypal" onclick="Payment.selectMethod('paypal')">🅿️<div class="mt-2 text-sm">PayPal</div></button>
+          <button class="method-card rounded-3xl border border-black/5 bg-white p-6 text-center font-extrabold text-plum shadow-soft hover:border-rose"
+                  data-method="bizum" onclick="Payment.selectMethod('bizum')">📱<div class="mt-2 text-sm">Bizum</div></button>
+        </div>
+
+        <div class="mt-6 rounded-3xl border border-black/5 bg-white p-6 shadow-soft" id="paymentForm">
+          <p class="text-sm font-semibold text-text2">Selecciona un método de pago</p>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <button class="rounded-full border border-black/10 bg-white/70 px-6 py-3 text-sm font-extrabold text-plum hover:bg-white"
+                  onclick="goBack()">← Volver al carrito</button>
+          <button class="rounded-full bg-gradient-to-r from-rose to-rose-600 px-6 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                  id="payBtn" onclick="Payment.processPayment()">Pagar ahora</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIRMATION -->
+    <section class="page" id="page-confirmation">
+      <div class="mx-auto max-w-2xl px-4 py-14 text-center sm:px-6">
+        <div class="text-6xl">🎉</div>
+        <h2 class="mt-4 font-display text-4xl font-black text-plum">¡Pago completado!</h2>
+        <p class="mt-3 text-sm font-semibold text-text2">Tu suscripción Premium ha sido activada. ¡Disfruta de todas las ventajas!</p>
+
+        <div class="mx-auto mt-8 max-w-md space-y-3">
+          <div class="rounded-2xl border border-black/5 bg-white p-4 text-sm font-semibold text-text2 shadow-soft">✓ Likes ilimitados activados</div>
+          <div class="rounded-2xl border border-black/5 bg-white p-4 text-sm font-semibold text-text2 shadow-soft">✓ Puedes ver quién te dio like</div>
+          <div class="rounded-2xl border border-black/5 bg-white p-4 text-sm font-semibold text-text2 shadow-soft">✓ Boost disponible</div>
+          <div class="rounded-2xl border border-black/5 bg-white p-4 text-sm font-semibold text-text2 shadow-soft">✓ Sin anuncios</div>
+        </div>
+
+        <button class="mt-8 rounded-full bg-gradient-to-r from-rose to-rose-600 px-7 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                onclick="showSection('home')">Empezar a usar Premium</button>
+      </div>
+    </section>
+
+    <!-- PRIVACY / CONTACT / HELP -->
+    <section class="page" id="page-privacy">
+      <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <button class="rounded-full border border-black/10 bg-white/70 px-5 py-2 text-sm font-extrabold text-text2 hover:text-plum"
+                onclick="goBack()">← Volver</button>
+
+        <h1 class="mt-6 font-display text-4xl font-black text-plum">Política de Privacidad</h1>
+
+        <div class="mt-6 space-y-4">
+          <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <h2 class="font-display text-xl font-black text-plum">Cookies</h2>
+            <p class="mt-2 text-sm font-semibold leading-6 text-text2">Utilizamos cookies para mejorar tu experiencia en Love Swipe. Nos ayudan a recordar tus preferencias y personalizar el contenido.</p>
+            <p class="mt-2 text-sm font-semibold leading-6 text-text2">Puedes gestionar tus cookies en cualquier momento desde la configuración de tu navegador.</p>
+          </div>
+
+          <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <h2 class="font-display text-xl font-black text-plum">Datos Personales</h2>
+            <p class="mt-2 text-sm font-semibold leading-6 text-text2">Recopilamos información básica (nombre, edad, género y orientación) para darte matches compatibles. Se almacena de forma segura y no se comparte sin consentimiento.</p>
+          </div>
+
+          <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <h2 class="font-display text-xl font-black text-plum">Derechos</h2>
+            <p class="mt-2 text-sm font-semibold leading-6 text-text2">Puedes acceder, rectificar o eliminar tus datos personales cuando quieras contactándonos.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-contact">
+      <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <button class="rounded-full border border-black/10 bg-white/70 px-5 py-2 text-sm font-extrabold text-text2 hover:text-plum"
+                onclick="goBack()">← Volver</button>
+
+        <h1 class="mt-6 font-display text-4xl font-black text-plum">Contacto</h1>
+        <p class="mt-2 text-sm font-semibold text-text2">¿Tienes alguna pregunta o necesitas ayuda? Estamos aquí para ti.</p>
+
+        <div class="mt-6 rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+          <div class="text-sm font-semibold text-text2"><strong>Email:</strong> soporte@loveswipe.com</div>
+          <div class="mt-2 text-sm font-semibold text-text2"><strong>Teléfono:</strong> +34 900 123 456</div>
+          <div class="mt-2 text-sm font-semibold text-text2"><strong>Horario:</strong> Lunes a Viernes, 9:00 - 18:00</div>
+        </div>
+
+        <p class="mt-4 text-sm font-semibold text-text2">Respuesta garantizada en menos de 24 horas.</p>
+      </div>
+    </section>
+
+    <section class="page" id="page-help">
+      <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <button class="rounded-full border border-black/10 bg-white/70 px-5 py-2 text-sm font-extrabold text-text2 hover:text-plum"
+                onclick="goBack()">← Volver</button>
+
+        <h1 class="mt-6 font-display text-4xl font-black text-plum">Centro de Ayuda</h1>
+
+        <div class="mt-6 space-y-4">
+          <details class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <summary class="flex cursor-pointer list-none items-center justify-between font-display text-xl font-black text-plum">
+              ¿Cómo cambiar mi foto de perfil?
+              <span class="transition group-open:rotate-180">⌄</span>
+            </summary>
+            <p class="mt-3 text-sm font-semibold leading-6 text-text2">Ve a "Mi Perfil", pulsa "Editar foto" y selecciona una imagen desde tu dispositivo.</p>
+          </details>
+
+          <details class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <summary class="flex cursor-pointer list-none items-center justify-between font-display text-xl font-black text-plum">
+              ¿Por qué no veo matches?
+              <span class="transition group-open:rotate-180">⌄</span>
+            </summary>
+            <p class="mt-3 text-sm font-semibold leading-6 text-text2">Completa tu perfil y configura género y orientación. Premium mejora visibilidad.</p>
+          </details>
+
+          <details class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <summary class="flex cursor-pointer list-none items-center justify-between font-display text-xl font-black text-plum">
+              ¿Cómo reportar un usuario?
+              <span class="transition group-open:rotate-180">⌄</span>
+            </summary>
+            <p class="mt-3 text-sm font-semibold leading-6 text-text2">Desde el perfil del usuario, pulsa "reportar" y elige el motivo. Revisamos el caso.</p>
+          </details>
+
+          <details class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <summary class="flex cursor-pointer list-none items-center justify-between font-display text-xl font-black text-plum">
+              Problemas con el pago
+              <span class="transition group-open:rotate-180">⌄</span>
+            </summary>
+            <p class="mt-3 text-sm font-semibold leading-6 text-text2">Contacta con soporte indicando tu ID de transacción.</p>
+          </details>
+
+          <details class="group rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <summary class="flex cursor-pointer list-none items-center justify-between font-display text-xl font-black text-plum">
+              ¿Cómo eliminar mi cuenta?
+              <span class="transition group-open:rotate-180">⌄</span>
+            </summary>
+            <p class="mt-3 text-sm font-semibold leading-6 text-text2">Ve a Configuración > Privacidad > Eliminar cuenta. Esta acción es irreversible.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="fixed inset-0 z-[900] hidden items-center justify-center bg-black/50 backdrop-blur-md" id="overlay"
+       onclick="if(event.target===this)closeModal()">
+    <div class="relative w-[92%] max-w-md rounded-[28px] border border-black/5 bg-white p-8 shadow-softlg">
+      <button class="absolute right-4 top-4 h-10 w-10 rounded-full border border-black/5 bg-bg2 text-sm font-black text-text2 hover:text-plum"
+              onclick="closeModal()">✕</button>
+
+      <div class="font-display text-2xl font-black text-plum">Love<span class="text-rose italic">Swipe</span></div>
+      <h2 class="mt-2 font-display text-3xl font-black text-plum" id="modalTitle">Únete gratis</h2>
+      <p class="mt-1 text-sm font-semibold text-text2">El amor está a un swipe de distancia 💕</p>
+
+      <div class="mt-6 flex gap-2 rounded-2xl bg-bg2 p-1">
+        <button class="modal-tab flex-1 rounded-xl px-4 py-2 text-sm font-extrabold text-text2"
+                id="tabReg" onclick="switchTab('register')">Registro</button>
+        <button class="modal-tab flex-1 rounded-xl px-4 py-2 text-sm font-extrabold text-text2"
+                id="tabLog" onclick="switchTab('login')">Entrar</button>
+      </div>
+
+      <div id="formReg">
+        <div class="mt-4">
+          <label class="text-[11px] font-extrabold tracking-widest text-text3">NOMBRE</label>
+          <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                 type="text" placeholder="¿Cómo te llaman?">
+        </div>
+
+        <div class="mt-4">
+          <label class="text-[11px] font-extrabold tracking-widest text-text3">EMAIL</label>
+          <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                 type="email" placeholder="tu@email.com">
+        </div>
+
+        <div class="mt-4">
+          <label class="text-[11px] font-extrabold tracking-widest text-text3">CONTRASEÑA</label>
+          <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                 type="password" placeholder="Mínimo 8 caracteres">
+        </div>
+
+        <div class="mt-4">
+          <label class="text-[11px] font-extrabold tracking-widest text-text3">GÉNERO</label>
+          <select id="userGender"
+                  class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none">
+            <option value="">Selecciona...</option>
+            <option value="hombre">Hombre</option>
+            <option value="mujer">Mujer</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="mt-4">
+          <label class="text-[11px] font-extrabold tracking-widest text-text3">ORIENTACIÓN SEXUAL</label>
+          <select id="userOrientation"
+                  class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none">
+            <option value="">Selecciona...</option>
+            <option value="heterosexual">Heterosexual</option>
+            <option value="gay">Gay</option>
+            <option value="bisexual">Bisexual</option>
+          </select>
+        </div>
+
+        <div class="mt-4">
+          <label class="text-[11px] font-extrabold tracking-widest text-text3">FOTO DE PERFIL</label>
+          <input class="mt-2 w-full text-sm font-semibold text-text2" type="file" id="userPhotoInput" accept="image/*">
+        </div>
+
+        <button class="mt-6 w-full rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-5 py-4 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                onclick="handleAuth('register')">
+          Crear cuenta gratis ❤️
+        </button>
+      </div>
+
+      <div id="formLog" class="hidden">
+        <div class="mt-4">
+          <label class="text-[11px] font-extrabold tracking-widest text-text3">EMAIL</label>
+          <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                 type="email" placeholder="tu@email.com">
+        </div>
+
+        <div class="mt-4">
+          <label class="text-[11px] font-extrabold tracking-widest text-text3">CONTRASEÑA</label>
+          <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                 type="password" placeholder="Tu contraseña">
+        </div>
+
+        <button class="mt-6 w-full rounded-2xl bg-gradient-to-r from-rose to-rose-600 px-5 py-4 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                onclick="handleAuth('login')">
+          Entrar ❤️
+        </button>
+      </div>
+
+      <div class="my-6 flex items-center gap-3 text-xs font-extrabold text-text3">
+        <div class="h-px flex-1 bg-black/5"></div>
+        o continúa con
+        <div class="h-px flex-1 bg-black/5"></div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3">
+        <button class="rounded-2xl border border-black/5 bg-bg2 px-3 py-3 text-xs font-extrabold text-text2 hover:bg-white"
+                onclick="handleAuth()">🔴 Google</button>
+        <button class="rounded-2xl border border-black/5 bg-bg2 px-3 py-3 text-xs font-extrabold text-text2 hover:bg-white"
+                onclick="handleAuth()">🍎 Apple</button>
+        <button class="rounded-2xl border border-black/5 bg-bg2 px-3 py-3 text-xs font-extrabold text-text2 hover:bg-white"
+                onclick="handleAuth()">🔵 Facebook</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="rounded-full bg-gradient-to-r from-plum to-plum2 px-6 py-3 text-sm font-semibold text-white shadow-softlg"></div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    'use strict';
+
+    // Placeholder para Auth que será reemplazado por payment-backend.js
+    let Auth = {
+      token: null,
+      user: null,
+      request: async () => null,
+      saveToken: () => {},
+      clearToken: () => {},
+      restore: async () => {}
+    };
+
+
+    /* DATA */
+    const PROFILES = [
+      { id:1, name:'Lucía', age:26, city:'Badalona', dist:'0.5 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/1.jpg', bg:'linear-gradient(145deg,#6A3DE8,#C77DFF)',
+        bio:'"Amante del arte y los atardeceres. Busco a alguien que aprecie las pequeñas cosas de la vida ☀️"',
+        tags:['🎨 Arte','🍕 Foodie','✈️ Viajes','📸 Fotografía'], online:true, matchRate:.55,
+        details:{ Altura:'168 cm', Idiomas:'Español, Inglés', Estudios:'Diseño Gráfico', Trabajo:'Diseñadora UX' },
+      },
+      { id:2, name:'Emma', age:24, city:'Barcelona', dist:'1.2 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/2.jpg', bg:'linear-gradient(145deg,#F857A6,#FF5858)',
+        bio:'"Músico de corazón, viajera de alma. Creo que la vida es demasiado corta para la música aburrida 🎵"',
+        tags:['🎵 Música','🏋️ Gym','📚 Libros','🎭 Teatro'], online:false, matchRate:.50,
+        details:{ Altura:'162 cm', Idiomas:'Español, Francés', Estudios:'Conservatorio', Trabajo:'Músico' },
+      },
+      { id:3, name:'Sara', age:27, city:'Badalona', dist:'2.3 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/3.jpg', bg:'linear-gradient(145deg,#4FACFE,#43E97B)',
+        bio:'"Científica por el día, exploradora por la noche. Me encanta mezclar ciencia y naturaleza 🔬"',
+        tags:['🔬 Ciencia','🌿 Naturaleza','🐶 Perros','🏃 Running'], online:true, matchRate:.70,
+        details:{ Altura:'170 cm', Idiomas:'Español, Inglés, Alemán', Estudios:'Bioquímica', Trabajo:'Investigadora' },
+      },
+      { id:4, name:'Luna', age:22, city:'Barcelona', dist:'0.8 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/4.jpg', bg:'linear-gradient(145deg,#FD7900,#A52DCC)',
+        bio:'"Teatro, yoga y buen café por las mañanas. Creo en los encuentros fortuitos y las conversaciones sin fin ☕"',
+        tags:['🎭 Teatro','☕ Café','🧘 Yoga','🌸 Mindfulness'], online:true, matchRate:.58,
+        details:{ Altura:'165 cm', Idiomas:'Español, Catalán', Estudios:'Arte Dramático', Trabajo:'Actriz' },
+      },
+      { id:5, name:'Valeria', age:25, city:'Badalona', dist:'3.1 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/5.jpg', bg:'linear-gradient(145deg,#11998E,#38EF7D)',
+        bio:'"Surfera y amante del chocolate. Si no estoy en el agua, estoy planeando cuándo volver 🏄‍♀️🍫"',
+        tags:['🏄 Surf','🍫 Foodie','🎮 Gaming','🏔️ Montaña'], online:false, matchRate:.65,
+        details:{ Altura:'171 cm', Idiomas:'Español, Inglés', Estudios:'INEF', Trabajo:'Entrenadora Personal' },
+      },
+      { id:6, name:'Sofía', age:28, city:'Barcelona', dist:'4.0 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/6.jpg', bg:'linear-gradient(145deg,#2D3561,#553C9A)',
+        bio:'"Desarrolladora de día, gamer de noche. Busco a alguien que entienda mis referencias a Matrix 💻"',
+        tags:['💻 Tech','🎮 Gaming','📚 Sci-Fi','☕ Café'], online:true, matchRate:.72,
+        details:{ Altura:'166 cm', Idiomas:'Español, Inglés', Estudios:'Ingeniería Informática', Trabajo:'Senior Dev' },
+      },
+      { id:7, name:'Carlos', age:30, city:'Barcelona', dist:'1.5 km', gender:'hombre',
+        photo:'https://randomuser.me/api/portraits/men/1.jpg', bg:'linear-gradient(145deg,#FF6B6B,#4ECDC4)',
+        bio:'"Entrenador personal apasionado por el fitness y la buena comida. Vivo para motivar a otros a alcanzar sus metas 💪"',
+        tags:['🏋️ Gym','🍎 Saludable','🎵 Música','📚 Libros'], online:true, matchRate:.60,
+        details:{ Altura:'180 cm', Idiomas:'Español, Inglés', Estudios:'INEF', Trabajo:'Entrenador Personal' },
+      },
+      { id:8, name:'Miguel', age:29, city:'Badalona', dist:'2.0 km', gender:'hombre',
+        photo:'https://randomuser.me/api/portraits/men/2.jpg', bg:'linear-gradient(145deg,#667EEA,#764BA2)',
+        bio:'"Fotógrafo freelance que captura momentos únicos. Me encanta viajar y conocer nuevas culturas 📸"',
+        tags:['📸 Fotografía','✈️ Viajes','🎨 Arte','☕ Café'], online:false, matchRate:.55,
+        details:{ Altura:'175 cm', Idiomas:'Español, Inglés, Francés', Estudios:'Bellas Artes', Trabajo:'Fotógrafo' },
+      },
+      { id:9, name:'Alejandro', age:32, city:'Barcelona', dist:'3.5 km', gender:'hombre',
+        photo:'https://randomuser.me/api/portraits/men/3.jpg', bg:'linear-gradient(145deg,#F093FB,#F5576C)',
+        bio:'"Chef de profesión, foodie de corazón. Creo que la mejor manera de conocer a alguien es compartiendo una buena comida 🍽️"',
+        tags:['🍳 Cocina','🍷 Vino','🎭 Teatro','🏃 Running'], online:true, matchRate:.68,
+        details:{ Altura:'178 cm', Idiomas:'Español, Italiano', Estudios:'Escuela de Hostelería', Trabajo:'Chef' },
+      },
+      { id:10, name:'David', age:26, city:'Barcelona', dist:'0.9 km', gender:'hombre',
+        photo:'https://randomuser.me/api/portraits/men/4.jpg', bg:'linear-gradient(145deg,#4FACFE,#00F2FE)',
+        bio:'"Desarrollador web con pasión por la tecnología y los videojuegos. Busco a alguien con quien compartir aventuras virtuales 🎮"',
+        tags:['💻 Tech','🎮 Gaming','🎵 Música','🍕 Foodie'], online:true, matchRate:.62,
+        details:{ Altura:'172 cm', Idiomas:'Español, Inglés', Estudios:'Ingeniería Informática', Trabajo:'Desarrollador Web' },
+      },
+      { id:11, name:'Pablo', age:31, city:'Badalona', dist:'4.2 km', gender:'hombre',
+        photo:'https://randomuser.me/api/portraits/men/5.jpg', bg:'linear-gradient(145deg,#43E97B,#38F9D7)',
+        bio:'"Músico y productor. Creo que la música es el lenguaje universal que nos conecta a todos 🎹"',
+        tags:['🎵 Música','🎹 Producción','🎭 Teatro','📖 Libros'], online:false, matchRate:.59,
+        details:{ Altura:'176 cm', Idiomas:'Español, Inglés, Alemán', Estudios:'Conservatorio', Trabajo:'Productor Musical' },
+      },
+      { id:12, name:'Javier', age:28, city:'Barcelona', dist:'2.8 km', gender:'hombre',
+        photo:'https://randomuser.me/api/portraits/men/6.jpg', bg:'linear-gradient(145deg,#FA709A,#FEE140)',
+        bio:'"Periodista deportivo que vive por el fútbol y el baloncesto. Me encanta debatir sobre partidos y estrategias 🏀"',
+        tags:['⚽ Fútbol','🏀 Baloncesto','📝 Periodismo','🍺 Cerveza'], online:true, matchRate:.64,
+        details:{ Altura:'182 cm', Idiomas:'Español, Inglés', Estudios:'Periodismo', Trabajo:'Periodista Deportivo' },
+      },
+      { id:13, name:'Ana', age:23, city:'Barcelona', dist:'1.7 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/7.jpg', bg:'linear-gradient(145deg,#A8E6CF,#DCEDC1)',
+        bio:'"Estudiante de medicina con alma de artista. Pinto para relajarme y sueño con viajar por el mundo 🎨"',
+        tags:['🎨 Arte','📚 Libros','✈️ Viajes','☕ Café'], online:true, matchRate:.57,
+        details:{ Altura:'160 cm', Idiomas:'Español, Inglés', Estudios:'Medicina', Trabajo:'Estudiante' },
+      },
+      { id:14, name:'Carmen', age:35, city:'Badalona', dist:'3.0 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/8.jpg', bg:'linear-gradient(145deg,#FFD89B,#19547B)',
+        bio:'"Arquitecta con experiencia. Me apasiona diseñar espacios que inspiren y conecten a las personas 🏗️"',
+        tags:['🏗️ Arquitectura','🎨 Arte','🌿 Naturaleza','🍷 Vino'], online:false, matchRate:.61,
+        details:{ Altura:'168 cm', Idiomas:'Español, Inglés, Italiano', Estudios:'Arquitectura', Trabajo:'Arquitecta' },
+      },
+      { id:15, name:'Isabel', age:33, city:'Barcelona', dist:'2.5 km', gender:'mujer',
+        photo:'https://randomuser.me/api/portraits/women/9.jpg', bg:'linear-gradient(145deg,#FF9A9E,#FECFEF)',
+        bio:'"Profesora de yoga y meditación. Creo en el equilibrio entre mente, cuerpo y espíritu 🧘‍♀️"',
+        tags:['🧘 Yoga','🌸 Mindfulness','📚 Libros','☕ Café'], online:true, matchRate:.66,
+        details:{ Altura:'165 cm', Idiomas:'Español, Sánscrito', Estudios:'Yoga Therapy', Trabajo:'Profesora de Yoga' },
+      },
+    ];
+
+    /* EXTRA: more messages in chat to feel real */
+    const CHAT_DATA = {
+      valentina:{
+        name:'Valentina', photo:'https://randomuser.me/api/portraits/women/7.jpg', bg:'linear-gradient(145deg,#F857A6,#FF5858)',
+        online:true, profileId:null,
+        msgs:[
+          {me:false, text:'¡Hola! Vi que también te gusta el surf 🏄‍♀️', time:'14:32'},
+          {me:true, text:'¡Sí! Llevo 3 años aprendiendo. ¿Surfeas en Badalona?', time:'14:34'},
+          {me:false, text:'¡Exacto! En la playa del Bogatell los fines de semana 😍', time:'14:35'},
+          {me:true, text:'¡Qué casualidad! A lo mejor nos hemos cruzado por ahí ☀️', time:'14:36'},
+          {me:false, text:'Jajaja, seguro. ¿Quedamos el sábado?', time:'14:37'},
+          {me:true, text:'¡Perfecto! ¿A qué hora?', time:'14:38'},
+          {me:false, text:'¿Te parece a las 10 de la mañana? El mar está más tranquilo', time:'14:39'},
+          {me:true, text:'Genial, nos vemos allí. ¿Llevo algo?', time:'14:40'},
+          {me:false, text:'Solo tu tabla y buena energía 😉', time:'14:41'},
+          {me:false, text:'Por cierto, ¿eres más de surf o paddle?', time:'14:42'},
+          {me:true, text:'Surf, pero si el mar está flojo hago paddle 😄', time:'14:43'},
+          {me:false, text:'Planazo. Te aviso si veo buenas olas', time:'14:44'},
+          {me:true, text:'Genial! Yo llevo café si quieres ☕', time:'14:45'},
+          {me:false, text:'Perfecto, eso suma puntos 😍', time:'14:46'},
+          {me:true, text:'Jajaja entonces vamos ganando', time:'14:47'},
+          {me:false, text:'¿Te va bien quedar en el paseo marítimo y bajamos juntos?', time:'14:48'},
+          {me:true, text:'Sí, en la entrada de la playa a las 9:45', time:'14:49'},
+          {me:false, text:'Hecho! Y después brunch? 🥐', time:'14:50'},
+          {me:true, text:'Obvio. Me apunto.', time:'14:51'},
+        ]
+      },
+      lucia:{
+        name:'Lucía', photo:'https://randomuser.me/api/portraits/women/1.jpg', bg:'linear-gradient(145deg,#6A3DE8,#C77DFF)',
+        online:true, profileId:1,
+        msgs:[
+          {me:false, text:'¡Hola! Me encantó tu perfil 🎨', time:'11:50'},
+          {me:true, text:'¡Gracias! El tuyo también es muy chulo', time:'11:55'},
+          {me:false, text:'¿Conoces la galería Miscelanea?', time:'12:02'},
+          {me:true, text:'¡Sí! He ido varias veces. ¿Eres artista?', time:'12:05'},
+          {me:false, text:'Sí, soy diseñadora UX. ¿Y tú?', time:'12:07'},
+          {me:true, text:'Trabajo en desarrollo web. Me gusta mucho el arte digital', time:'12:10'},
+          {me:false, text:'¡Qué interesante! ¿Has visto la expo de arte contemporáneo?', time:'12:12'},
+          {me:true, text:'Todavía no, pero me encantaría ir. ¿Quieres que vayamos juntos?', time:'12:15'},
+          {me:false, text:'¡Me encantaría! ¿Qué día te viene bien?', time:'12:18'},
+          {me:true, text:'¿Qué tal este viernes por la tarde?', time:'12:20'},
+          {me:false, text:'Perfecto. ¿Te recojo o nos vemos allí?', time:'12:22'},
+          {me:true, text:'Nos vemos en la entrada a las 7. ¡Estoy emocionado!', time:'12:25'},
+          {me:false, text:'Genial. Y luego podríamos ir a tomar algo por el Born', time:'12:26'},
+          {me:true, text:'Sí, conozco un sitio tranquilo con música buena', time:'12:27'},
+          {me:false, text:'Ufff eso me encanta. ¿Qué tipo de música?', time:'12:28'},
+          {me:true, text:'Indie suave o lo-fi, para hablar bien', time:'12:29'},
+          {me:false, text:'Perfecto. Me apunto. 😄', time:'12:30'},
+        ]
+      },
+      emma:{
+        name:'Emma', photo:'https://randomuser.me/api/portraits/women/2.jpg', bg:'linear-gradient(145deg,#F093FB,#F5576C)',
+        online:false, profileId:2,
+        msgs:[
+          {me:false, text:'¡Hey! ¿Eres de Barcelona?', time:'20:10'},
+          {me:true, text:'Sí, de Gràcia. ¿Y tú?', time:'20:14'},
+          {me:false, text:'¡Somos casi vecinos! Vivo en el Born 😄', time:'20:16'},
+          {me:true, text:'¡Qué guay! ¿Qué te gusta hacer por aquí?', time:'20:20'},
+          {me:false, text:'Me encanta ir a conciertos y probar restaurantes nuevos', time:'20:22'},
+          {me:true, text:'A mí también. ¿Has ido al Primavera Sound?', time:'20:25'},
+          {me:false, text:'¡Sí! Fue increíble. ¿Qué grupos te gustan?', time:'20:27'},
+          {me:true, text:'Me gusta mucho el indie y el pop alternativo', time:'20:30'},
+          {me:false, text:'¡Perfecto! Conozco un sitio genial para ver bandas emergentes', time:'20:32'},
+          {me:true, text:'Pásame el nombre! Me apetece plan de música', time:'20:34'},
+          {me:false, text:'Se llama Freedonia. Buen ambiente siempre', time:'20:35'},
+          {me:true, text:'Top! Vamos un día de estos', time:'20:36'},
+        ]
+      },
+      luna:{
+        name:'Luna', photo:'https://randomuser.me/api/portraits/women/4.jpg', bg:'linear-gradient(145deg,#FD7900,#A52DCC)',
+        online:true, profileId:4,
+        msgs:[
+          {me:false, text:'Hola, vi que te gusta el teatro 🎭', time:'18:00'},
+          {me:true, text:'¡Sí! Soy fanática de las obras clásicas', time:'18:05'},
+          {me:false, text:'Yo también. ¿Has visto alguna recientemente?', time:'18:07'},
+          {me:true, text:'La última fue "La Casa de Bernarda Alba". Me encantó', time:'18:10'},
+          {me:false, text:'¡Qué casualidad! Yo fui hace dos semanas', time:'18:12'},
+          {me:true, text:'¿En serio? ¿Qué te pareció la interpretación?', time:'18:15'},
+          {me:false, text:'La actriz principal estuvo increíble. ¿Quieres ir a ver otra?', time:'18:18'},
+          {me:true, text:'¡Claro! ¿Qué obra recomiendas?', time:'18:20'},
+          {me:false, text:'Hay una de Shakespeare en el Teatre Lliure', time:'18:22'},
+          {me:true, text:'Perfecto, vamos juntos. ¿Cuándo es?', time:'18:25'},
+          {me:false, text:'Este sábado. ¿Reservamos entradas?', time:'18:27'},
+          {me:true, text:'Sí, por favor. ¡Será genial!', time:'18:30'},
+          {me:false, text:'Te mando el link de reservas luego', time:'18:31'},
+          {me:true, text:'Vale! y después café?', time:'18:32'},
+          {me:false, text:'Obvio ☕', time:'18:33'},
+        ]
+      },
+      carlos:{
+        name:'Carlos', photo:'https://randomuser.me/api/portraits/men/1.jpg', bg:'linear-gradient(145deg,#FF6B6B,#4ECDC4)',
+        online:true, profileId:7,
+        msgs:[
+          {me:false, text:'¡Hola! Vi que te gusta el gym 💪', time:'16:00'},
+          {me:true, text:'¡Sí! ¿Vas a algún gimnasio en Barcelona?', time:'16:05'},
+          {me:false, text:'Sí, voy al Holmes Place en Plaza Catalunya', time:'16:07'},
+          {me:true, text:'¡Yo también! ¿Qué días sueles ir?', time:'16:10'},
+          {me:false, text:'Martes, jueves y sábados por la mañana', time:'16:12'},
+          {me:true, text:'¡Qué casualidad! Yo los mismos días. ¿Quieres entrenar juntos?', time:'16:15'},
+          {me:false, text:'¡Claro! Sería genial motivarnos mutuamente', time:'16:18'},
+          {me:true, text:'Perfecto. ¿Empezamos este martes?', time:'16:20'},
+          {me:false, text:'¡Hecho! Nos vemos en la entrada a las 9', time:'16:22'},
+          {me:true, text:'Dale! y luego smoothie post entreno 😄', time:'16:23'},
+          {me:false, text:'Trato hecho!', time:'16:24'},
+        ]
+      },
+      miguel:{
+        name:'Miguel', photo:'https://randomuser.me/api/portraits/men/2.jpg', bg:'linear-gradient(145deg,#667EEA,#764BA2)',
+        online:false, profileId:8,
+        msgs:[
+          {me:false, text:'¡Hola! Soy fotógrafo, como tú mencionas en tu perfil 📸', time:'19:00'},
+          {me:true, text:'¡Qué guay! ¿Qué tipo de fotos haces?', time:'19:05'},
+          {me:false, text:'Principalmente retratos y paisajes urbanos', time:'19:07'},
+          {me:true, text:'Me encanta. ¿Has expuesto alguna vez?', time:'19:10'},
+          {me:false, text:'Sí, tuve una expo en el CCCB el año pasado', time:'19:12'},
+          {me:true, text:'¡Impresionante! Me gustaría verla', time:'19:15'},
+          {me:false, text:'Te puedo enseñar las fotos si quieres. ¿Quedamos para un café?', time:'19:18'},
+          {me:true, text:'¡Me encantaría! ¿Dónde sueles ir?', time:'19:20'},
+          {me:false, text:'Hay un sitio genial en el Raval llamado La Chapelle', time:'19:22'},
+          {me:true, text:'Perfecto, vamos este viernes', time:'19:25'},
+          {me:false, text:'Genial, te paso hora cuando pueda', time:'19:26'},
+        ]
+      },
+      alejandro:{
+        name:'Alejandro', photo:'https://randomuser.me/api/portraits/men/3.jpg', bg:'linear-gradient(145deg,#F093FB,#F5576C)',
+        online:true, profileId:9,
+        msgs:[
+          {me:false, text:'¡Hola! Soy chef, ¿te gusta cocinar? 🍳', time:'12:00'},
+          {me:true, text:'¡Sí! Aunque no soy muy bueno, me encanta probar cosas nuevas', time:'12:05'},
+          {me:false, text:'¡Genial! La cocina es mi pasión. ¿Qué tipo de comida te gusta?', time:'12:07'},
+          {me:true, text:'Me gusta la mediterránea y la asiática', time:'12:10'},
+          {me:false, text:'¡Perfecto! Yo hago fusión mediterráneo-asiático', time:'12:12'},
+          {me:true, text:'¿En qué restaurante trabajas?', time:'12:15'},
+          {me:false, text:'Tengo mi propio restaurante en el Eixample', time:'12:18'},
+          {me:true, text:'¡Qué increíble! Me encantaría ir', time:'12:20'},
+          {me:false, text:'Ven cuando quieras, te invito a cenar', time:'12:22'},
+          {me:true, text:'¡Gracias! ¿Cuándo tienes mesa libre?', time:'12:25'},
+          {me:false, text:'Este jueves o domingo. ¿Cuál te va?', time:'12:26'},
+          {me:true, text:'Domingo suena bien 😄', time:'12:27'},
+        ]
+      },
+    };
+
+    const AUTO_REPLIES = [
+      '¡Qué bien! Me alegra mucho 😊',
+      'Jaja, ¡eso es genial!',
+      '¿En serio? Cuéntame más...',
+      '¡Totalmente de acuerdo! ✨',
+      '¿Qué planes tienes para el finde?',
+      '¡Claro que sí! ¿Cuándo quedamos?',
+      'Haha 😂 ¡Qué divertido!',
+      'Me encanta esa idea ✨',
+      '¡Oye, qué coincidencia!',
+      'Eso me recuerda a cuando fui a... cuéntame más 👀',
+    ];
+
+    /* STATE */
+    const State = {
+      currentPage: 'home',
+      previousPage: 'home',
+      matched: [],
+      chatData: (() => {
+        try {
+          return JSON.parse(JSON.stringify(CHAT_DATA));
+        } catch (e) {
+          console.error('Error parsing CHAT_DATA:', e);
+          return {};
+        }
+      })(),
+      activeChatId: null,
+      userPreferences: localStorage.getItem('userPreferences') || null,
+      isLoggedIn: false,
+      isPremium: localStorage.getItem('isPremium') === 'true',
+      cart: [],
+      likesUsed: parseInt(localStorage.getItem('likesUsed') || '0', 10),
+      userGender: localStorage.getItem('userGender') || null,
+      userOrientation: localStorage.getItem('userOrientation') || null,
+      userPhoto: localStorage.getItem('userPhoto') || null,
+      filters: (() => {
+        try {
+          const stored = localStorage.getItem('premiumFilters');
+          return stored ? JSON.parse(stored) : {
+            ageMin: 18,
+            ageMax: 99,
+            distanceMax: 10,
+            interests: [],
+            verifiedOnly: false,
+            activeOnly: false
+          };
+        } catch (e) {
+          return {
+            ageMin: 18,
+            ageMax: 99,
+            distanceMax: 10,
+            interests: [],
+            verifiedOnly: false,
+            activeOnly: false
+          };
+        }
+      })(),
+      myProfile: {
+        name: 'Tu Nombre',
+        age: 25,
+        city: 'Tu Ciudad',
+        bio: 'Cuéntanos sobre ti...',
+        tags: ['💻 Tech','🎵 Música'],
+        details: { Altura: '170 cm', Trabajo: 'Desarrollador' }
+      }
+    };
+
+    /* NAV INDICATOR (animated pill) */
+    function updateNavIndicator(page) {
+      const tabs = document.getElementById('navTabs');
+      const indicator = document.getElementById('navIndicator');
+      if (!tabs || !indicator) return;
+
+      const btn = tabs.querySelector(`.nav-tab[data-page="${page}"]`);
+      if (!btn) return;
+
+      const tabsRect = tabs.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+
+      const x = btnRect.left - tabsRect.left;
+      const w = btnRect.width;
+
+      indicator.style.width = w + 'px';
+      indicator.style.transform = `translateX(${x}px)`;
+    }
+
+    /* ROUTER */
+    function showSection(page) {
+      if (!['home','explore','matches','chat','profile','preferences','myprofile','premium','cart','payment','confirmation','privacy','contact','help'].includes(page)) return;
+      State.previousPage = State.currentPage;
+      State.currentPage = page;
+
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+
+      document.querySelectorAll('.nav-tab').forEach(t =>
+        t.classList.toggle('active', t.dataset.page === page)
+      );
+
+      history.pushState({page}, '', '#' + page);
+      window.scrollTo({top:0, behavior:'smooth'});
+
+      if (page === 'explore') {
+        Swipe.onEnter();
+        Filters.render();
+      }
+      if (page === 'matches') MatchesPage.render();
+      if (page === 'chat') Chat.onEnter();
+      if (page === 'preferences') Preferences.init();
+      if (page === 'myprofile') renderMyProfile();
+      if (page === 'cart') Cart.render();
+      if (page === 'payment') Payment.init();
+
+      updateNavIndicator(page);
+    }
+    function goBack() { showSection(State.previousPage || 'home'); }
+
+    window.addEventListener('popstate', e => {
+      if (e.state && e.state.page) showSection(e.state.page);
+    });
+
+    /* TOAST */
+    let _toastTimer;
+    function showToast(msg, ms=3000) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+    }
+
+    /* PARTICLES */
+    function spawnParticles(x, y, emoji, n=7) {
+      for (let i=0;i<n;i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.textContent = emoji;
+        p.style.left = (x + (Math.random()-.5)*80) + 'px';
+        p.style.top = (y + (Math.random()-.5)*60) + 'px';
+        p.style.animationDelay = (Math.random()*0.4) + 's';
+        p.style.fontSize = (.7 + Math.random()*0.8) + 'rem';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 2800);
+      }
+    }
+
+    /* PHONE HERO DEMO */
+    const phoneProfiles = [
+      {name:'Valentina, 24', meta:'0.8 km · Barcelona', photo:'https://randomuser.me/api/portraits/women/7.jpg', bg:'linear-gradient(145deg,#F857A6,#FF5858)'},
+      {name:'Lucía, 26', meta:'0.5 km · Badalona', photo:'https://randomuser.me/api/portraits/women/1.jpg', bg:'linear-gradient(145deg,#6A3DE8,#C77DFF)'},
+      {name:'Sara, 27', meta:'2.3 km · Badalona', photo:'https://randomuser.me/api/portraits/women/3.jpg', bg:'linear-gradient(145deg,#4FACFE,#43E97B)'},
+    ];
+    let phoneIdx = 0;
+    function phoneSwiped(dir) {
+      phoneIdx = (phoneIdx + 1) % phoneProfiles.length;
+      const p = phoneProfiles[phoneIdx];
+      const bg = document.getElementById('phoneCardBg');
+      const em = document.getElementById('phoneCardEmoji');
+      const nm = document.getElementById('phoneCardName');
+      const mt = document.getElementById('phoneCardMeta');
+      bg.style.background = 'none';
+      em.innerHTML = `<img src="${p.photo}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:24px;">`;
+      nm.textContent = p.name;
+      mt.textContent = p.meta;
+      if (dir === 'right') showToast('❤️ ¡Like enviado!');
+      else if (dir === 'super') { showToast('⭐ ¡Super Like!'); spawnParticles(window.innerWidth/2, 300, '⭐', 6); }
+      else showToast('✕ Pasas');
+    }
+
+    /* SWIPE MODULE */
+    const Swipe = (() => {
+      let profiles = [...PROFILES];
+      let idx = 0;
+      let hist = [];
+      let dragging = false, sx=0, sy=0;
+      let topCard = null;
+
+      function buildCard(profile, pos) {
+        const el = document.createElement('div');
+        el.className = 'swipe-card';
+        el.dataset.pos = pos;
+        el.dataset.id = profile.id;
+
+        el.innerHTML = `
+          <div class="relative h-full w-full overflow-hidden rounded-[28px] border border-black/5 bg-white shadow-softlg">
+            <div class="relative h-[68%] w-full">
+              <img src="${profile.photo}" alt="${profile.name}" class="h-full w-full object-cover" />
+              <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+
+              <div class="absolute left-4 top-4 right-4 flex items-start justify-between">
+                <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-extrabold text-white backdrop-blur">
+                  <span class="h-2 w-2 rounded-full ${profile.online ? 'bg-emerald-400' : 'bg-white/40'}"></span>
+                  ${profile.online ? 'Online' : 'Visto hoy'}
+                </span>
+                <span class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-extrabold text-white backdrop-blur">${profile.dist}</span>
+              </div>
+
+              <div class="stamp stamp-like">LIKE ❤</div>
+              <div class="stamp stamp-nope">NOPE ✕</div>
+              <div class="stamp stamp-super">SUPER ★</div>
+            </div>
+
+            <div class="p-5">
+              <div class="flex items-end gap-2">
+                <div class="font-display text-2xl font-black text-plum">${profile.name}</div>
+                <div class="text-sm font-extrabold text-text2">${profile.age}</div>
+              </div>
+              <div class="mt-1 text-xs font-extrabold text-text3">📍 ${profile.city} · ${profile.dist}</div>
+
+              <div class="mt-3 text-sm italic leading-6 text-text2">${profile.bio}</div>
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                ${profile.tags.map(t => `
+                  <span class="rounded-full border border-black/5 bg-black/[0.04] px-3 py-1 text-[11px] font-extrabold text-plum">${t}</span>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="card-match flex flex-col items-center justify-center bg-gradient-to-br from-plum to-plum2 p-7 text-center"
+                 id="cm-${profile.id}">
+              <div class="text-5xl" style="animation:heartPop .6s cubic-bezier(.34,1.56,.64,1) both">💕</div>
+              <div class="mt-2 font-display text-4xl font-black italic text-rose2">¡Match!</div>
+              <div class="mt-2 text-xs font-bold text-white/60">Tú y ${profile.name} se gustan mutuamente</div>
+
+              <div class="mt-5 flex items-center">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full border-4 border-rose bg-white/10 text-2xl">😊</div>
+                <div class="-ml-4 h-16 w-16 overflow-hidden rounded-full border-4 border-gold bg-white/10">
+                  <img src="${profile.photo}" alt="${profile.name}" class="h-full w-full object-cover" />
+                </div>
+              </div>
+
+              <button class="mt-6 w-full rounded-full bg-gradient-to-r from-rose to-rose-600 px-5 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                      onclick="Swipe.matchToChat(${profile.id})">💬 Enviar mensaje</button>
+
+              <button class="mt-3 text-xs font-bold text-white/40 hover:text-white/60"
+                      onclick="Swipe.next()">Seguir explorando</button>
+            </div>
+          </div>
+        `;
+        return el;
+      }
+
+      function render() {
+        const deck = document.getElementById('deckArea');
+        if (!deck) return;
+        deck.innerHTML = '';
+        for (let off=2; off>=0; off--) {
+          const p = profiles[(idx+off) % profiles.length];
+          const c = buildCard(p, off);
+          deck.appendChild(c);
+        }
+        attachDrag();
+      }
+
+      function attachDrag() {
+        topCard = document.querySelector('.swipe-card[data-pos="0"]');
+        if (!topCard) return;
+        topCard.addEventListener('mousedown', dragStart);
+        topCard.addEventListener('touchstart', dragStart, {passive:true});
+      }
+
+      function dragStart(e) {
+        if (e.target.closest('.card-match')) return;
+        dragging = true;
+        const pt = e.touches ? e.touches[0] : e;
+        sx = pt.clientX; sy = pt.clientY;
+        topCard.style.transition = 'none';
+        document.addEventListener('mousemove', dragMove);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchmove', dragMove, {passive:false});
+        document.addEventListener('touchend', dragEnd);
+      }
+
+      function dragMove(e) {
+        if (!dragging || !topCard) return;
+        if (e.cancelable) e.preventDefault();
+        const pt = e.touches ? e.touches[0] : e;
+        const dx = pt.clientX - sx, dy = pt.clientY - sy;
+        topCard.style.transform = `translate(${dx}px,${dy}px) rotate(${dx*.055}deg)`;
+
+        const like = topCard.querySelector('.stamp-like');
+        const nope = topCard.querySelector('.stamp-nope');
+        const super_ = topCard.querySelector('.stamp-super');
+
+        if (dy < -55 && Math.abs(dx) < 65) {
+          super_.style.opacity = Math.min(1, -dy/75);
+          like.style.opacity = 0; nope.style.opacity = 0;
+        } else if (dx > 30) {
+          like.style.opacity = Math.min(1, dx/80);
+          nope.style.opacity = 0; super_.style.opacity = 0;
+        } else if (dx < -30) {
+          nope.style.opacity = Math.min(1, -dx/80);
+          like.style.opacity = 0; super_.style.opacity = 0;
+        } else {
+          like.style.opacity = 0; nope.style.opacity = 0; super_.style.opacity = 0;
+        }
+      }
+
+      function dragEnd(e) {
+        if (!dragging) return;
+        dragging = false;
+        document.removeEventListener('mousemove', dragMove);
+        document.removeEventListener('mouseup', dragEnd);
+        document.removeEventListener('touchmove', dragMove);
+        document.removeEventListener('touchend', dragEnd);
+
+        const pt = e.changedTouches ? e.changedTouches[0] : e;
+        const dx = pt.clientX - sx, dy = pt.clientY - sy;
+
+        if (dy < -80 && Math.abs(dx) < 80) doSwipe('super');
+        else if (Math.abs(dx) > 80) doSwipe(dx>0 ? 'right' : 'left');
+        else {
+          topCard.style.transition = 'transform .35s cubic-bezier(.25,.46,.45,.94)';
+          topCard.style.transform = '';
+          topCard.querySelectorAll('.stamp').forEach(s => s.style.opacity=0);
+        }
+      }
+
+      function doSwipe(dir) {
+        if (!topCard) return;
+        const profile = profiles[idx % profiles.length];
+        hist.push(idx);
+        setStatus('');
+
+        if (dir === 'right') {
+          if (!State.isPremium && State.likesUsed >= 5) {
+            showToast('Likes limitados. Actualiza a Premium para likes ilimitados');
+            return;
+          }
+          State.likesUsed++;
+          localStorage.setItem('likesUsed', String(State.likesUsed));
+
+          animOut(topCard, 580, 28);
+          spawnParticles(window.innerWidth/2, window.innerHeight/2, '❤️');
+          setStatus('❤️ Like a ' + profile.name + '!', '#4AE584');
+
+          if (!State.matched.find(m=>m.id===profile.id)) State.matched.push(profile);
+          if (Math.random() < profile.matchRate) {
+            setTimeout(() => { document.getElementById('cm-'+profile.id)?.classList.add('show'); }, 450);
+            return;
+          }
+        } else if (dir === 'left') {
+          animOut(topCard, -580, -28);
+          setStatus('✕ Pasas', '#FF4D6A');
+        } else if (dir === 'super') {
+          topCard.style.transition = 'transform .5s, opacity .45s';
+          topCard.style.transform = 'translateY(-560px) scale(.8)';
+          topCard.style.opacity = '0';
+          topCard.querySelector('.stamp-super').style.opacity = '1';
+          spawnParticles(window.innerWidth/2, window.innerHeight/2, '⭐');
+          setStatus('⭐ Super Like a ' + profile.name + '!', '#4A9EFF');
+          if (!State.matched.find(m=>m.id===profile.id)) State.matched.push(profile);
+          setTimeout(() => { document.getElementById('cm-'+profile.id)?.classList.add('show'); }, 450);
+          return;
+        }
+
+        setTimeout(next, 600);
+      }
+
+      function animOut(card, tx, rot) {
+        card.style.transition = 'transform .55s cubic-bezier(.25,.46,.45,.94), opacity .5s';
+        card.style.transform = `translateX(${tx}px) rotate(${rot}deg)`;
+        card.style.opacity = '0';
+      }
+
+      function next() {
+        idx = (idx + 1) % profiles.length;
+        render();
+        setStatus('', '');
+      }
+
+      function matchToChat(profileId) {
+        const p = profiles.find(x=>x.id===profileId);
+        if (p) {
+          const cid = p.name.toLowerCase();
+          if (!State.chatData[cid]) {
+            State.chatData[cid] = {name:p.name, photo:p.photo, bg:p.bg, online:p.online, profileId:p.id, msgs:[]};
+          }
+        }
+        next();
+        showSection('chat');
+      }
+
+      function rewind() {
+        if (!hist.length) { setStatus('No hay swipes anteriores', '#AFA0B4'); return; }
+        idx = hist.pop();
+        render();
+        setStatus('↩ Vuelves a ' + profiles[idx%profiles.length].name, '#C8923A');
+      }
+
+      function boost() {
+        spawnParticles(window.innerWidth/2, window.innerHeight/2, '⚡');
+        setStatus('⚡ Boost activado! ×10 visibilidad por 30 min.', '#8B5CF6');
+      }
+
+      function setStatus(msg, color) {
+        const el = document.getElementById('swipeStatus');
+        if (!el) return;
+        el.textContent = msg;
+        el.style.color = color || '#AFA0B4';
+        clearTimeout(el._t);
+        if (msg) el._t = setTimeout(() => { el.textContent=''; }, 2600);
+      }
+
+      function filterProfiles() {
+        let filtered = [...PROFILES];
+        if (State.userGender && State.userOrientation) {
+          if (State.userOrientation === 'heterosexual') {
+            if (State.userGender === 'hombre') filtered = filtered.filter(p => p.gender === 'mujer');
+            else if (State.userGender === 'mujer') filtered = filtered.filter(p => p.gender === 'hombre');
+          } else if (State.userOrientation === 'gay') {
+            if (State.userGender === 'hombre') filtered = filtered.filter(p => p.gender === 'hombre');
+            else if (State.userGender === 'mujer') filtered = filtered.filter(p => p.gender === 'mujer');
+          }
+        }
+
+        const filters = State.filters || {};
+        if (State.isPremium && filters) {
+          filtered = filtered.filter(p => {
+            const ageOk = p.age >= filters.ageMin && p.age <= filters.ageMax;
+            const distValue = Number((p.dist || '0').replace(' km', '').trim()) || 0;
+            const distOk = distValue <= filters.distanceMax;
+            const interestsOk = !filters.interests.length || filters.interests.some(interest =>
+              p.tags.some(tag => tag.toLowerCase().includes(interest.toLowerCase()))
+            );
+            const verifiedOk = !filters.verifiedOnly || p.online;
+            const activeOk = !filters.activeOnly || p.online;
+            return ageOk && distOk && interestsOk && verifiedOk && activeOk;
+          });
+        }
+
+        profiles = filtered.length ? filtered : [...PROFILES];
+        idx = 0;
+        hist = [];
+      }
+
+      function onEnter() { filterProfiles(); render(); }
+
+      return {doSwipe, rewind, boost, next, matchToChat, onEnter, filterProfiles};
+    })();
+
+    /* MATCHES PAGE */
+    const MatchesPage = {
+      render() {
+        const grid = document.getElementById('matchesGrid');
+        if (!grid) return;
+
+        if (!State.matched.length) {
+          grid.innerHTML = `
+            <div class="col-span-full rounded-3xl border border-black/5 bg-white p-10 text-center shadow-soft">
+              <div class="text-6xl opacity-40">💕</div>
+              <div class="mt-3 text-sm font-semibold text-text2">Aún no tienes matches.</div>
+              <div class="mt-1 text-sm font-semibold text-text3">Ve a Explorar y desliza para encontrar tu match.</div>
+              <button class="mt-6 rounded-full bg-gradient-to-r from-rose to-rose-600 px-7 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg active:scale-[.98]"
+                      onclick="showSection('explore')">Ir a Explorar</button>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = State.matched.map(p => `
+          <div class="group relative overflow-hidden rounded-3xl border border-black/5 bg-white shadow-soft transition hover:-translate-y-1 hover:shadow-softlg"
+               onclick="Profile.show(${p.id},'matches')">
+            <div class="relative h-44 w-full bg-bg2">
+              <img src="${p.photo}" alt="${p.name}" class="h-full w-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+              ${p.online ? `<div class="absolute right-3 top-3 h-3 w-3 rounded-full border-2 border-white bg-sage"></div>` : ``}
+            </div>
+
+            <div class="p-4">
+              <div class="font-display text-lg font-black text-plum">${p.name}, ${p.age}</div>
+              <div class="mt-1 text-xs font-bold text-text3">${p.city} · ${p.dist}</div>
+            </div>
+
+            <button class="absolute bottom-3 right-3 h-10 w-10 rounded-full bg-gradient-to-r from-rose to-rose-600 text-sm font-black text-white shadow-soft hover:scale-105 active:scale-95"
+                    onclick="event.stopPropagation(); Chat.openChatWith('${p.name.toLowerCase()}'); showSection('chat')">💬</button>
+          </div>
+        `).join('');
+      }
+    };
+
+    /* CHAT MODULE */
+    const Chat = (() => {
+      function onEnter() { renderList(); renderNewMatches(); updateBadge(); }
+
+      function renderList(filter='') {
+        const list = document.getElementById('chatList');
+        if (!list) return;
+
+        const entries = Object.entries(State.chatData)
+          .filter(([,c]) => c.name.toLowerCase().includes(filter.toLowerCase()));
+
+        list.innerHTML = entries.map(([id,c]) => {
+          const last = c.msgs.length ? c.msgs[c.msgs.length-1] : null;
+          const preview = last ? (last.me ? 'Tú: ' : '') + last.text : '¡Es un match! Di hola 👋';
+          const unread = c.msgs.filter(m=>!m.me && !m.read).length;
+
+          return `
+            <div class="flex cursor-pointer items-center gap-3 border-b border-black/5 px-5 py-4 hover:bg-bg2 ${State.activeChatId===id ? 'bg-rose/5' : ''}"
+                 onclick="Chat.open('${id}')">
+              <div class="relative h-11 w-11 overflow-hidden rounded-full bg-bg2">
+                <img src="${c.photo}" alt="${c.name}" class="h-full w-full object-cover" />
+                ${c.online ? `<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-sage"></div>` : ``}
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <div class="truncate font-display text-base font-black text-plum">${c.name}</div>
+                <div class="truncate text-xs font-semibold text-text3">${escHtml(preview)}</div>
+              </div>
+
+              <div class="flex flex-col items-end gap-2">
+                <div class="text-[11px] font-extrabold text-text3">${last ? 'Hoy' : 'Nuevo'}</div>
+                ${unread > 0 ? `<div class="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-rose to-rose-600 text-[11px] font-extrabold text-white">${unread}</div>` : ``}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderNewMatches() {
+        const row = document.getElementById('nmRow');
+        if (!row) return;
+
+        row.innerHTML = Object.entries(State.chatData)
+          .filter(([,c]) => c.msgs.length === 0)
+          .map(([id,c]) => `
+            <button class="flex flex-col items-center gap-2"
+                    onclick="Chat.open('${id}')">
+              <div class="rounded-full bg-gradient-to-r from-rose to-gold p-[2px]">
+                <div class="h-12 w-12 overflow-hidden rounded-full bg-bg2">
+                  <img src="${c.photo}" alt="${c.name}" class="h-full w-full object-cover" />
+                </div>
+              </div>
+              <div class="max-w-[68px] truncate text-[11px] font-extrabold text-text3">${c.name}</div>
+            </button>
+          `).join('');
+      }
+
+      function open(id) {
+        State.activeChatId = id;
+        const c = State.chatData[id];
+        if (!c) return;
+
+        c.msgs.forEach(m => m.read = true);
+        updateBadge();
+        renderList();
+
+        document.getElementById('chatEmpty').style.display = 'none';
+        const win = document.getElementById('chatWindow');
+        win.classList.remove('hidden');
+        win.style.display = 'flex';
+
+        document.getElementById('cwAv').innerHTML = `<img src="${c.photo}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;">`;
+        document.getElementById('cwOnlineDot').style.display = c.online ? '' : 'none';
+        document.getElementById('cwName').textContent = c.name;
+
+        const st = document.getElementById('cwStatus');
+        st.textContent = c.online ? 'Online ahora' : 'Visto hace poco';
+        st.className = 'text-xs font-bold ' + (c.online ? 'text-sage' : 'text-text3');
+
+        renderMsgs(id);
+        
+        // Ensure input is properly enabled and focused
+        const input = document.getElementById('cwInput');
+        if (input) {
+          input.disabled = false;
+          input.readOnly = false;
+          input.style.pointerEvents = 'auto';
+          setTimeout(() => input.focus(), 100);
+        }
+      }
+
+      function renderMsgs(id) {
+        const box = document.getElementById('cwMsgs');
+        const c = State.chatData[id];
+        if (!box || !c) return;
+
+        box.innerHTML = '';
+
+        if (!c.msgs.length) {
+          box.innerHTML = `<div class="mx-auto mt-10 max-w-md rounded-3xl border border-black/5 bg-white/70 p-6 text-center text-sm font-semibold text-text2 shadow-soft">
+            ¡Es tu match con <span class="font-extrabold text-plum">${c.name}</span>! Sé el primero en escribir 👋
+          </div>`;
+          return;
+        }
+
+        box.insertAdjacentHTML('beforeend', `<div class="mx-auto mb-4 w-fit rounded-full bg-white/70 px-4 py-2 text-[11px] font-extrabold text-text3 shadow-soft">Hoy</div>`);
+
+        c.msgs.forEach(m => {
+          const wrap = document.createElement('div');
+          wrap.className = 'mb-3 flex ' + (m.me ? 'justify-end' : 'justify-start');
+
+          const bubble = document.createElement('div');
+          bubble.className = 'max-w-[78%]';
+
+          bubble.innerHTML = `
+            <div class="${m.me
+              ? 'rounded-2xl rounded-tr-md bg-gradient-to-r from-rose to-rose-600 text-white'
+              : 'rounded-2xl rounded-tl-md bg-white text-plum border border-black/5'
+            } px-4 py-2 text-sm font-semibold leading-6 shadow-soft">
+              ${escHtml(m.text)}
+            </div>
+            <div class="mt-1 px-2 text-[11px] font-extrabold text-text3 ${m.me ? 'text-right' : 'text-left'}">${m.time}</div>
+          `;
+
+          wrap.appendChild(bubble);
+          box.appendChild(wrap);
+        });
+
+        box.scrollTop = box.scrollHeight;
+      }
+
+      function send() {
+        const input = document.getElementById('cwInput');
+        const text = input.value.trim();
+        if (!text || !State.activeChatId) return;
+
+        const c = State.chatData[State.activeChatId];
+        const time = getTime();
+        c.msgs.push({me:true, text, time, read:true});
+        input.value = '';
+
+        renderMsgs(State.activeChatId);
+        renderList();
+
+        if (c.online) {
+          setTimeout(() => showTyping(State.activeChatId), 700);
+          setTimeout(() => {
+            removeTyping();
+            const reply = AUTO_REPLIES[Math.floor(Math.random()*AUTO_REPLIES.length)];
+            c.msgs.push({me:false, text:reply, time:getTime(), read:false});
+            renderMsgs(State.activeChatId);
+            renderList();
+            updateBadge();
+          }, 2100);
+        }
+      }
+
+      function showTyping(chatId) {
+        const box = document.getElementById('cwMsgs');
+        if (!box || State.activeChatId !== chatId) return;
+
+        const t = document.createElement('div');
+        t.id = 'typingBubble';
+        t.className = 'mb-3 flex justify-start';
+
+        t.innerHTML = `
+          <div class="rounded-2xl rounded-tl-md border border-black/5 bg-white px-4 py-3 shadow-soft">
+            <div class="flex items-center gap-2">
+              <span class="h-2 w-2 animate-[typeDot_1.2s_ease_infinite] rounded-full bg-text3"></span>
+              <span class="h-2 w-2 animate-[typeDot_1.2s_ease_infinite_.2s] rounded-full bg-text3"></span>
+              <span class="h-2 w-2 animate-[typeDot_1.2s_ease_infinite_.4s] rounded-full bg-text3"></span>
+            </div>
+          </div>
+        `;
+        box.appendChild(t);
+        box.scrollTop = box.scrollHeight;
+      }
+      function removeTyping() { document.getElementById('typingBubble')?.remove(); }
+
+      function viewProfile() {
+        if (!State.activeChatId) return;
+        const c = State.chatData[State.activeChatId];
+        if (c.profileId) Profile.show(c.profileId, 'chat');
+        else showToast('Perfil completo próximamente 👤');
+      }
+
+      function showEmojiPicker() {
+        const picker = document.getElementById('emojiPicker');
+        picker.style.display = (picker.style.display === 'flex') ? 'none' : 'flex';
+      }
+
+      function insertEmoji(emoji) {
+        const input = document.getElementById('cwInput');
+        if (input) { input.value += emoji; input.focus(); }
+        document.getElementById('emojiPicker').style.display = 'none';
+      }
+
+      function filterList(v) { renderList(v); }
+
+      function openChatWith(id) {
+        State.activeChatId = id;
+        onEnter();
+        setTimeout(() => open(id), 50);
+      }
+
+      function updateBadge() {
+        const total = Object.values(State.chatData)
+          .reduce((n,c) => n + c.msgs.filter(m => !m.me && !m.read).length, 0);
+        const b = document.getElementById('sidebarBadge');
+        if (b) b.textContent = total;
+      }
+
+      function getTime() {
+        const n = new Date();
+        return String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+      }
+
+      return {onEnter, open, send, showEmojiPicker, insertEmoji, filterList, viewProfile, openChatWith};
+    })();
+
+    /* PROFILE */
+    const Profile = {
+      show(profileId, fromPage='explore') {
+        const p = PROFILES.find(x=>x.id===profileId);
+        if (!p) { showToast('Perfil no encontrado'); return; }
+        State.previousPage = fromPage;
+
+        const photo = document.getElementById('profPhoto');
+        photo.style.background = p.bg;
+        photo.innerHTML = `<img src="${p.photo}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`;
+
+        document.getElementById('profName').textContent = p.name;
+        document.getElementById('profAge').textContent = p.age;
+        document.getElementById('profCity').textContent = '📍 ' + p.city;
+        document.getElementById('profDist').textContent = p.dist;
+        document.getElementById('profMatch').textContent = Math.round(p.matchRate*100) + '% match';
+        document.getElementById('profBio').textContent = p.bio;
+
+        document.getElementById('profTags').innerHTML = p.tags.map(t => `
+          <span class="rounded-full border border-black/5 bg-black/[0.04] px-4 py-2 text-xs font-extrabold text-plum">${t}</span>
+        `).join('');
+
+        document.getElementById('profDetails').innerHTML = Object.entries(p.details||{}).map(([k,v]) => `
+          <div class="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
+            <div class="text-[11px] font-extrabold tracking-widest text-text3">${k.toUpperCase()}</div>
+            <div class="mt-1 text-sm font-extrabold text-plum">${v}</div>
+          </div>
+        `).join('');
+
+        document.getElementById('profNope').onclick = () => { showToast('✕ Pasas'); showSection(State.previousPage); };
+        document.getElementById('profLike').onclick = () => {
+          if (!State.matched.find(m=>m.id===p.id)) State.matched.push(p);
+          spawnParticles(window.innerWidth/2, window.innerHeight/2, '❤️');
+          showToast('❤️ Like enviado a ' + p.name + '!');
+          showSection(State.previousPage);
+        };
+
+        document.getElementById('profChatBtn').onclick = () => {
+          const cid = p.name.toLowerCase();
+          if (!State.chatData[cid]) State.chatData[cid] = {name:p.name,photo:p.photo,bg:p.bg,online:p.online,profileId:p.id,msgs:[]};
+          showSection('chat');
+          setTimeout(() => Chat.open(cid), 100);
+        };
+
+        showSection('profile');
+      }
+    };
+
+    const Filters = {
+      selected: State.filters,
+      interestOptions: ['Arte','Viajes','Deporte','Música','Foodie','Naturaleza','Tech','Café'],
+      init() {
+        this.render();
+      },
+      openUpgrade() {
+        if (!Auth.user) {
+          showToast('Regístrate para acceder a los filtros premium.');
+          openModal('register');
+          return;
+        }
+        if (!State.isPremium) {
+          showToast('Solo usuarios Premium pueden usar filtros avanzados.');
+          showSection('premium');
+          return;
+        }
+        const panel = document.getElementById('premiumFilterSection');
+        panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      },
+      toggleInterest(value) {
+        if (!Auth.user || !State.isPremium) {
+          this.openUpgrade();
+          return;
+        }
+        const idx = this.selected.interests.indexOf(value);
+        if (idx >= 0) this.selected.interests.splice(idx, 1);
+        else this.selected.interests.push(value);
+        this.save();
+        this.render();
+      },
+      apply() {
+        if (!Auth.user || !State.isPremium) {
+          this.openUpgrade();
+          return;
+        }
+        State.filters = { ...this.selected };
+        localStorage.setItem('premiumFilters', JSON.stringify(State.filters));
+        Swipe.filterProfiles();
+        Swipe.render();
+        showToast('Filtros premium aplicados.');
+      },
+      reset() {
+        if (!Auth.user || !State.isPremium) {
+          this.openUpgrade();
+          return;
+        }
+        this.selected = {
+          ageMin: 18,
+          ageMax: 99,
+          distanceMax: 10,
+          interests: [],
+          verifiedOnly: false,
+          activeOnly: false
+        };
+        State.filters = { ...this.selected };
+        localStorage.setItem('premiumFilters', JSON.stringify(State.filters));
+        this.render();
+        Swipe.filterProfiles();
+        Swipe.render();
+        showToast('Filtros premium restablecidos.');
+      },
+      save() {
+        State.filters = { ...this.selected };
+        localStorage.setItem('premiumFilters', JSON.stringify(State.filters));
+      },
+      render() {
+        const section = document.getElementById('premiumFilterSection');
+        const form = document.getElementById('premiumFilterForm');
+        const actions = document.getElementById('premiumFilterActions');
+        if (!section || !form || !actions) return;
+
+        if (!Auth.user || !State.isPremium) {
+          section.classList.add('hidden');
+          return;
+        }
+
+        section.classList.remove('hidden');
+
+        const interestsHtml = this.interestOptions.map(tag => {
+          const active = this.selected.interests.includes(tag);
+          return `
+            <button type="button" onclick="Filters.toggleInterest('${tag}')"
+                    class="rounded-full px-4 py-2 text-sm font-semibold ${active ? 'bg-rose text-white' : 'border border-black/5 bg-white text-plum'} transition">${tag}</button>`;
+        }).join('');
+
+        form.innerHTML = `
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label class="text-[11px] font-extrabold tracking-widest text-text3">Edad mínima</label>
+              <input type="number" id="filterAgeMin" min="18" max="99" value="${this.selected.ageMin}"
+                     class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                     onchange="Filters.selected.ageMin = Number(this.value); Filters.save();" />
+            </div>
+            <div>
+              <label class="text-[11px] font-extrabold tracking-widest text-text3">Edad máxima</label>
+              <input type="number" id="filterAgeMax" min="18" max="99" value="${this.selected.ageMax}"
+                     class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                     onchange="Filters.selected.ageMax = Number(this.value); Filters.save();" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="text-[11px] font-extrabold tracking-widest text-text3">Distancia máxima (km)</label>
+              <input type="range" id="filterDistanceMax" min="1" max="20" value="${this.selected.distanceMax}"
+                     class="mt-2 w-full"
+                     onchange="Filters.selected.distanceMax = Number(this.value); Filters.save(); Filters.render();" />
+              <div class="mt-2 text-sm font-semibold text-text3">Hasta ${this.selected.distanceMax} km</div>
+            </div>
+            <div class="sm:col-span-4">
+              <div class="text-[11px] font-extrabold tracking-widest text-text3">Intereses</div>
+              <div class="mt-3 flex flex-wrap gap-2">${interestsHtml}</div>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="inline-flex items-center gap-3 rounded-2xl border border-black/5 bg-white px-4 py-3 w-full text-sm font-semibold text-plum">
+                <input type="checkbox" ${this.selected.verifiedOnly ? 'checked' : ''}
+                       onchange="Filters.selected.verifiedOnly = this.checked; Filters.save();" />
+                <span>Solo perfiles verificados</span>
+              </label>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="inline-flex items-center gap-3 rounded-2xl border border-black/5 bg-white px-4 py-3 w-full text-sm font-semibold text-plum">
+                <input type="checkbox" ${this.selected.activeOnly ? 'checked' : ''}
+                       onchange="Filters.selected.activeOnly = this.checked; Filters.save();" />
+                <span>Solo últimos activos</span>
+              </label>
+            </div>
+          </div>
+        `;
+
+        actions.innerHTML = `
+          <button class="w-full rounded-full bg-gradient-to-r from-rose to-rose-600 px-5 py-3 text-sm font-extrabold text-white shadow-soft hover:shadow-softlg"
+                  onclick="Filters.apply()">Aplicar filtros</button>
+          <button class="w-full rounded-full border border-black/5 bg-white px-5 py-3 text-sm font-semibold text-plum shadow-soft hover:bg-bg2"
+                  onclick="Filters.reset()">Restablecer filtros</button>
+        `;
+      }
+    };
+
+    /* PREFERENCES */
+    const Preferences = {
+      selected: State.userPreferences,
+      init() {
+        document.querySelectorAll('#preferencesOptions .pref-card').forEach(card => {
+          card.addEventListener('click', () => {
+            document.querySelectorAll('#preferencesOptions .pref-card').forEach(c => c.classList.remove('ring-2','ring-rose','bg-rose/5'));
+            card.classList.add('ring-2','ring-rose','bg-rose/5');
+            Preferences.selected = card.dataset.value;
+          });
+          if (card.dataset.value === Preferences.selected) card.classList.add('ring-2','ring-rose','bg-rose/5');
+        });
+      }
+    };
+
+    function savePreferences() {
+      if (Preferences.selected) {
+        State.userPreferences = Preferences.selected;
+        localStorage.setItem('userPreferences', Preferences.selected);
+        showToast('Preferencias guardadas: ' + Preferences.selected);
+        showSection('myprofile');
+      } else {
+        showToast('Selecciona una opción');
+      }
+    }
+
+    /* MY PROFILE photo */
+    function updateMyPhoto() {
+      const input = document.getElementById('myPhotoInput');
+      if (input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          State.userPhoto = e.target.result;
+          localStorage.setItem('userPhoto', e.target.result);
+          renderMyProfile();
+          showToast('Foto actualizada');
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function renderMyProfile() {
+      const p = State.myProfile;
+      document.getElementById('myProfName').textContent = p.name;
+      document.getElementById('myProfAge').textContent = p.age;
+      document.getElementById('myProfCity').textContent = '📍 ' + p.city;
+      document.getElementById('myProfBio').textContent = p.bio;
+      document.getElementById('myProfTags').innerHTML = p.tags.map(t => `
+        <span class="rounded-full border border-black/5 bg-black/[0.04] px-4 py-2 text-xs font-extrabold text-plum">${t}</span>
+      `).join('');
+      document.getElementById('myProfDetails').innerHTML = Object.entries(p.details).map(([k,v]) => `
+        <div class="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
+          <div class="text-[11px] font-extrabold tracking-widest text-text3">${k.toUpperCase()}</div>
+          <div class="mt-1 text-sm font-extrabold text-plum">${v}</div>
+        </div>
+      `).join('');
+
+      const photoEl = document.getElementById('myProfPhoto');
+      if (State.userPhoto) {
+        photoEl.innerHTML = `<img src="${State.userPhoto}" alt="Tu foto" style="width:100%;height:100%;object-fit:cover;">`;
+      } else {
+        photoEl.textContent = '👤';
+      }
+
+      const existingBadge = document.getElementById('premiumBadgeInline');
+      if (State.isPremium) {
+        const nameEl = document.getElementById('myProfName');
+        if (nameEl && !existingBadge) {
+          nameEl.insertAdjacentHTML('afterend', '<span id="premiumBadgeInline" class="rounded-full bg-gradient-to-r from-amber-300 to-orange-400 px-3 py-1 text-xs font-extrabold text-black shadow-soft">⭐ Premium</span>');
+        }
+      } else if (existingBadge) {
+        existingBadge.remove();
+      }
+    }
+
+    /* PREMIUM SYSTEM */
+    const Premium = {
+      plans: {
+        monthly: { name: 'Premium Mensual', price: 9.99, benefits: ['Likes ilimitados','Ver likes','1 Boost/mes','Sin anuncios'] },
+        yearly: { name: 'Premium Anual', price: 49.99, benefits: ['Todo lo mensual','12 Boosts/año','Soporte prioritario'] }
+      },
+      addToCart(plan) {
+        State.cart = [this.plans[plan]];
+        showToast('Plan añadido al carrito');
+        showSection('cart');
+      }
+    };
+
+    const Cart = {
+      render() {
+        const itemsEl = document.getElementById('cartItems');
+        const totalEl = document.getElementById('cartTotal');
+        if (!itemsEl || !totalEl) return;
+
+        if (!State.cart.length) {
+          itemsEl.innerHTML = '<div class="rounded-3xl border border-black/5 bg-white p-6 text-sm font-semibold text-text2 shadow-soft">Tu carrito está vacío</div>';
+          totalEl.textContent = '0.00€';
+          return;
+        }
+
+        const item = State.cart[0];
+        itemsEl.innerHTML = `
+          <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-soft">
+            <div class="font-display text-xl font-black text-plum">${item.name}</div>
+            <div class="mt-2 text-sm font-semibold text-text2">${item.benefits.join(' · ')}</div>
+            <div class="mt-4 font-display text-3xl font-black text-rose">${item.price.toFixed(2)}€</div>
+          </div>
+        `;
+        totalEl.textContent = item.price.toFixed(2) + '€';
+      }
+    };
+
+    const Payment = {
+      selectedMethod: null,
+      selectMethod(method) {
+        this.selectedMethod = method;
+        document.querySelectorAll('.method-card').forEach(card => card.classList.remove('ring-2','ring-rose','bg-rose/5'));
+        document.querySelector(`[data-method="${method}"]`)?.classList.add('ring-2','ring-rose','bg-rose/5');
+        this.renderForm();
+      },
+      renderForm() {
+        const formEl = document.getElementById('paymentForm');
+        if (!formEl) return;
+
+        if (this.selectedMethod === 'card') {
+          formEl.innerHTML = `
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="sm:col-span-2">
+                <label class="text-[11px] font-extrabold tracking-widest text-text3">NÚMERO DE TARJETA</label>
+                <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                       type="text" placeholder="1234 5678 9012 3456">
+              </div>
+              <div>
+                <label class="text-[11px] font-extrabold tracking-widest text-text3">EXPIRACIÓN</label>
+                <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                       type="text" placeholder="MM/AA">
+              </div>
+              <div>
+                <label class="text-[11px] font-extrabold tracking-widest text-text3">CVV</label>
+                <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                       type="text" placeholder="123">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="text-[11px] font-extrabold tracking-widest text-text3">NOMBRE EN LA TARJETA</label>
+                <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                       type="text" placeholder="Juan Pérez">
+              </div>
+            </div>
+          `;
+        } else if (this.selectedMethod === 'paypal') {
+          formEl.innerHTML = `<p class="text-sm font-semibold text-text2">Redirigiendo a PayPal... (simulado)</p>`;
+        } else if (this.selectedMethod === 'bizum') {
+          formEl.innerHTML = `
+            <label class="text-[11px] font-extrabold tracking-widest text-text3">NÚMERO DE TELÉFONO</label>
+            <input class="mt-2 h-11 w-full rounded-2xl border border-black/5 bg-bg2 px-4 text-sm font-semibold text-plum focus:border-rose focus:outline-none"
+                   type="text" placeholder="600 123 456">
+          `;
+        } else {
+          formEl.innerHTML = `<p class="text-sm font-semibold text-text2">Selecciona un método de pago</p>`;
+        }
+      },
+      init() {
+        this.selectedMethod = null;
+        document.querySelectorAll('.method-card').forEach(card => card.classList.remove('ring-2','ring-rose','bg-rose/5'));
+        document.getElementById('paymentForm').innerHTML = '<p class="text-sm font-semibold text-text2">Selecciona un método de pago</p>';
+      },
+      processPayment() {
+        if (!this.selectedMethod) {
+          showToast('Selecciona un método de pago');
+          return;
+        }
+        showToast('Procesando pago...');
+        setTimeout(() => {
+          State.isPremium = true;
+          localStorage.setItem('isPremium','true');
+          State.cart = [];
+          showSection('confirmation');
+        }, 2000);
+      }
+    };
+
+    /* AUTH MODAL */
+    function openModal(tab='register') {
+      const ov = document.getElementById('overlay');
+      ov.style.display = 'flex';
+      switchTab(tab);
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('overlay').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    function switchTab(tab) {
+      const tabReg = document.getElementById('tabReg');
+      const tabLog = document.getElementById('tabLog');
+      const formReg = document.getElementById('formReg');
+      const formLog = document.getElementById('formLog');
+
+      const activeCls = ['bg-white','shadow-soft','text-plum'];
+      const inactiveCls = ['text-text2'];
+
+      tabReg.classList.remove(...activeCls);
+      tabLog.classList.remove(...activeCls);
+      tabReg.classList.add(...inactiveCls);
+      tabLog.classList.add(...inactiveCls);
+
+      if (tab === 'register') {
+        tabReg.classList.add(...activeCls);
+        tabReg.classList.remove(...inactiveCls);
+        formReg.classList.remove('hidden');
+        formLog.classList.add('hidden');
+      } else {
+        tabLog.classList.add(...activeCls);
+        tabLog.classList.remove(...inactiveCls);
+        formLog.classList.remove('hidden');
+        formReg.classList.add('hidden');
+      }
+    }
+
+    function handleAuth(type='register') {
+      if (type === 'register') {
+        const gender = document.getElementById('userGender').value;
+        const orientation = document.getElementById('userOrientation').value;
+        const photoInput = document.getElementById('userPhotoInput');
+        if (!gender || !orientation) {
+          showToast('Por favor, selecciona género y orientación.');
+          return;
+        }
+        State.userGender = gender;
+        State.userOrientation = orientation;
+        localStorage.setItem('userGender', gender);
+        localStorage.setItem('userOrientation', orientation);
+
+        if (photoInput.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            State.userPhoto = e.target.result;
+            localStorage.setItem('userPhoto', e.target.result);
+          };
+          reader.readAsDataURL(photoInput.files[0]);
+        }
+      }
+
+      closeModal();
+      State.isLoggedIn = true;
+      document.getElementById('myProfileBtn').style.display = 'inline-flex';
+
+      if (type === 'register') {
+        showToast('¡Bienvenid@ a Love Swipe! 🎉');
+        showSection('preferences');
+      } else {
+        showToast('¡Bienvenid@ de vuelta!');
+        showSection('home');
+      }
+    }
+
+    /* MOBILE DRAWER */
+    function openDrawer() {
+      document.getElementById('drawer').style.right = '0px';
+      const ov = document.getElementById('drawerOverlay');
+      ov.classList.remove('hidden');
+      ov.classList.add('block');
+    }
+    function closeDrawer() {
+      document.getElementById('drawer').style.right = '-290px';
+      const ov = document.getElementById('drawerOverlay');
+      ov.classList.add('hidden');
+      ov.classList.remove('block');
+    }
+
+    /* UTIL */
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g,'&')
+        .replace(/</g,'<')
+        .replace(/>/g,'>');
+    }
+
+    /* INIT */
+    document.addEventListener('DOMContentLoaded', () => {
+      const hash = location.hash.replace('#','') || 'home';
+      const valid = ['home','explore','matches','chat','profile','preferences','myprofile','premium','cart','payment','confirmation','privacy','contact','help'];
+      const page = valid.includes(hash) ? hash : 'home';
+
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-'+page).classList.add('active');
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.page===page));
+      State.currentPage = page;
+
+      if (page === 'explore') Swipe.onEnter();
+      if (page === 'chat') Chat.onEnter();
+
+      history.replaceState({page}, '', '#'+page);
+
+      // Set nav indicator initial position
+      updateNavIndicator(page);
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+        if (State.currentPage === 'explore') {
+          if (e.key === 'ArrowRight') Swipe.doSwipe('right');
+          if (e.key === 'ArrowLeft') Swipe.doSwipe('left');
+          if (e.key === 'ArrowUp') Swipe.doSwipe('super');
+        }
+      });
+
+      // Cookie banner
+      if (!localStorage.getItem('fa_cookies')) {
+        const banner = document.createElement('div');
+        banner.className = 'fixed bottom-6 left-1/2 z-[700] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 rounded-3xl border border-black/5 bg-white p-5 shadow-softlg';
+        banner.style.animation = 'fadeUp .5s ease both';
+        banner.innerHTML = `
+          <div class="flex items-start gap-4">
+            <div class="text-3xl">🍪</div>
+            <div class="flex-1">
+              <div class="text-sm font-extrabold text-plum">Usamos cookies</div>
+              <div class="mt-1 text-xs font-semibold text-text2">Para mejorar tu experiencia y guardar tus preferencias.</div>
+            </div>
+            <div class="flex gap-2">
+              <button class="rounded-full border border-black/10 bg-bg2 px-4 py-2 text-xs font-extrabold text-text2 hover:bg-white"
+                      onclick="this.closest('div').parentElement.parentElement.remove()">Rechazar</button>
+              <button class="rounded-full bg-gradient-to-r from-rose to-rose-600 px-4 py-2 text-xs font-extrabold text-white shadow-soft"
+                      onclick="localStorage.setItem('fa_cookies','1'); this.closest('div').parentElement.parentElement.remove()">Aceptar</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(banner);
+      }
+    });
+  </script>
+  <script src="payment-backend.js"></script>
+</body>
+</html>
