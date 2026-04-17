@@ -244,8 +244,8 @@ app.post('/api/create-checkout-session', authMiddleware, async (req, res) => {
         userId: String(req.user.id),
         plan
       },
-      success_url: `${BASE_URL}/Pagina 2.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${BASE_URL}/Pagina 2.html?checkout=cancelled`
+      success_url: `${BASE_URL}/index.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${BASE_URL}/index.html?checkout=cancelled`
     });
 
     return res.json({ url: session.url });
