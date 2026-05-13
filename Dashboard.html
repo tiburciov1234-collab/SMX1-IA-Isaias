@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tèxtils Montblanc — Dashboard de Producció</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=DM+Mono:ital,wght@0,400;0,500&display=swap');
+
+  :root {
+    --bg:        #F2F0EC;
+    --bg2:       #E9E6E0;
+    --card:      #FFFFFF;
+    --border:    #D9D5CE;
+    --divider:   #EDEAE5;
+    --navy:      #1A2D40;
+    --navy2:     #243E59;
+    --blue:      #2563A8;
+    --blue-lt:   #EBF3FC;
+    --green:     #1E6B44;
+    --green-lt:  #EDF7F2;
+    --amber:     #A35B08;
+    --amber-lt:  #FEF7EC;
+    --red:       #B52424;
+    --red-lt:    #FEF2F2;
+    --text:      #1A2D40;
+    --text2:     #3A4E63;
+    --muted:     #6B7C93;
+    --faint:     #9BADC2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; height: 58px;
+    background: var(--navy);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 4px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: rgba(255,255,255,0.75);
+  }
+  .logo-text { font-size: 14px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.06em; }
+  .logo-sub  { font-size: 9.5px; color: rgba(255,255,255,0.38); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+
+  .hcenter { display: flex; gap: 22px; align-items: center; }
+  .status-wrap { display: flex; align-items: center; gap: 7px; }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #5DBA8A;
+    animation: blink 2.4s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .status-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.55); letter-spacing: 0.08em; }
+  .badge-warn {
+    background: rgba(180,99,8,0.22); border: 1px solid rgba(180,99,8,0.45);
+    color: #F5BE6D; padding: 4px 12px; border-radius: 3px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  }
+  .clock { font-family: 'DM Mono', monospace; font-size: 13px; color: rgba(255,255,255,0.45); }
+
+  /* ── LAYOUT ──────────────────────────────── */
+  .dash { padding: 22px 28px; display: grid; gap: 16px; }
+
+  /* ── KPI ROW ─────────────────────────────── */
+  .kpi-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 14px; }
+
+  .kpi {
+    background: var(--card);
+    border-radius: 6px;
+    padding: 18px 20px;
+    border-top: 3px solid transparent;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  }
+  .kpi.blue  { border-top-color: var(--blue); }
+  .kpi.green { border-top-color: var(--green); }
+  .kpi.amber { border-top-color: var(--amber); }
+  .kpi.red   { border-top-color: var(--red); }
+  .kpi.navy  { border-top-color: var(--navy2); }
+
+  .kpi-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+  .kpi-label  { font-size: 9.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
+  .kpi-ico    { font-size: 15px; opacity: 0.28; line-height: 1; }
+
+  .kpi-value  {
+    font-family: 'DM Mono', monospace;
+    font-size: 30px; font-weight: 400; line-height: 1;
+    color: var(--text); margin-bottom: 7px;
+  }
+  .kpi-delta  { font-size: 10.5px; color: var(--muted); }
+  .up  { color: var(--green); font-weight: 600; }
+  .dn  { color: var(--amber); font-weight: 600; }
+
+  /* ── GRID HELPERS ────────────────────────── */
+  .g2  { display: grid; grid-template-columns: 1fr 1fr;    gap: 16px; }
+  .g21 { display: grid; grid-template-columns: 2fr 1fr;    gap: 16px; }
+  .g3  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── CARD ────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border-radius: 6px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  }
+  .card-title {
+    font-size: 9.5px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--divider);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .blive {
+    font-size: 9px; padding: 2px 8px; border-radius: 2px;
+    background: var(--green-lt); color: var(--green);
+    font-weight: 600; border: 1px solid rgba(30,107,68,0.18);
+  }
+  .balert {
+    font-size: 9px; padding: 2px 8px; border-radius: 2px;
+    background: var(--red-lt); color: var(--red);
+    font-weight: 600; border: 1px solid rgba(181,36,36,0.18);
+  }
+
+  canvas { display: block; width: 100%; }
+
+  /* ── MACHINE LIST ────────────────────────── */
+  .mlist { display: flex; flex-direction: column; gap: 12px; }
+  .mrow  { display: flex; align-items: center; gap: 10px; }
+  .mname { font-size: 11px; font-weight: 600; min-width: 120px; color: var(--text2); }
+  .mbarbg { flex: 1; height: 5px; background: var(--bg2); border-radius: 2px; overflow: hidden; }
+  .mbar   { height: 100%; border-radius: 2px; }
+  .mtemp  { font-family: 'DM Mono', monospace; font-size: 11px; min-width: 48px; text-align: right; font-weight: 500; }
+
+  /* ── STOCK LIST ──────────────────────────── */
+  .slist { display: flex; flex-direction: column; gap: 11px; }
+  .srow  { display: flex; align-items: center; gap: 10px; }
+  .sname { font-size: 11px; font-weight: 600; min-width: 105px; color: var(--text2); }
+  .sbarbg { flex: 1; height: 7px; background: var(--bg2); border-radius: 2px; overflow: hidden; }
+  .sbar   { height: 100%; border-radius: 2px; }
+  .sqty   { font-family: 'DM Mono', monospace; font-size: 10px; min-width: 58px; text-align: right; font-weight: 500; }
+
+  /* ── ALERTS ──────────────────────────────── */
+  .alerts { display: flex; flex-direction: column; gap: 9px; }
+  .al { display: flex; align-items: flex-start; gap: 12px; padding: 11px 13px; border-radius: 5px; }
+  .al.crit { background: var(--red-lt);   border-left: 3px solid var(--red); }
+  .al.warn { background: var(--amber-lt); border-left: 3px solid var(--amber); }
+  .al.ok   { background: var(--green-lt); border-left: 3px solid var(--green); }
+  .al-ico  { font-size: 12px; margin-top: 1px; flex-shrink: 0; }
+  .al-msg  { font-size: 11px; font-weight: 700; color: var(--text); }
+  .al-sub  { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* ── TABLE ───────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th {
+    color: var(--muted); font-weight: 700; text-align: left;
+    padding: 0 8px 8px; border-bottom: 2px solid var(--divider);
+    font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  td { padding: 9px 8px; border-bottom: 1px solid var(--divider); color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text); font-weight: 500; }
+
+  .pill { display: inline-block; padding: 3px 9px; border-radius: 2px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; }
+  .pg { background: var(--green-lt); color: var(--green); }
+  .py { background: var(--amber-lt); color: var(--amber); }
+  .pb { background: var(--blue-lt);  color: var(--blue); }
+  .pr { background: var(--red-lt);   color: var(--red); }
+
+  /* ── ROI GRID ────────────────────────────── */
+  .roi-grid { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .roi-box {
+    background: var(--bg); border-radius: 5px; padding: 13px;
+    text-align: center; border: 1px solid var(--border);
+  }
+  .roi-label { font-size: 9.5px; color: var(--muted); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+  .roi-val   { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--text); }
+
+  footer {
+    text-align: center; padding: 16px 28px; color: var(--faint);
+    font-size: 10px; letter-spacing: 0.08em;
+    border-top: 1px solid var(--border);
+    background: var(--card); margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">▲</div>
+    <div>
+      <div class="logo-text">TÈXTILS MONTBLANC S.A.</div>
+      <div class="logo-sub">Dashboard de Producció · Polígon Industrial Les Comes, Igualada</div>
+    </div>
+  </div>
+  <div class="hcenter">
+    <div class="status-wrap">
+      <div class="dot"></div>
+      <span class="status-label">SISTEMA ACTIU</span>
+    </div>
+    <div class="badge-warn">2 ALERTES ACTIVES</div>
+  </div>
+  <div class="clock" id="clk">--:--:--</div>
+</header>
+
+<div class="dash">
+
+  <!-- KPIs ─────────────────────────────────────────────────────── -->
+  <div class="kpi-row">
+    <div class="kpi blue">
+      <div class="kpi-header">
+        <div class="kpi-label">OEE — Eficiència Global</div>
+        <span class="kpi-ico">⚙</span>
+      </div>
+      <div class="kpi-value" id="oee">82%</div>
+      <div class="kpi-delta"><span class="up">↑ 4%</span> vs. mes anterior</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-header">
+        <div class="kpi-label">Unitats Produïdes / hora</div>
+        <span class="kpi-ico">▦</span>
+      </div>
+      <div class="kpi-value" id="uph">47</div>
+      <div class="kpi-delta"><span class="up">↑ 6 u.</span> vs. ahir</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-header">
+        <div class="kpi-label">Taxa de Defectes</div>
+        <span class="kpi-ico">◎</span>
+      </div>
+      <div class="kpi-value" id="defpct">2.1%</div>
+      <div class="kpi-delta"><span class="dn">↓ 0.3%</span> vs. ahir</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-header">
+        <div class="kpi-label">Materials en Estoc Crític</div>
+        <span class="kpi-ico">□</span>
+      </div>
+      <div class="kpi-value">3</div>
+      <div class="kpi-delta">materials sota mínim</div>
+    </div>
+    <div class="kpi navy">
+      <div class="kpi-header">
+        <div class="kpi-label">Facturació del Mes</div>
+        <span class="kpi-ico">€</span>
+      </div>
+      <div class="kpi-value">148K€</div>
+      <div class="kpi-delta"><span class="up">↑ 12%</span> vs. mes anterior</div>
+    </div>
+  </div>
+
+  <!-- FILA 2 ──────────────────────────────────────────────────── -->
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">
+        Producció en Temps Real — Unitats / hora
+        <span class="blive">EN DIRECTE</span>
+      </div>
+      <canvas id="prodChart" height="155"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        Temperatura de Maquinària (°C)
+        <span class="balert">1 MÀQUINA CRÍTICA</span>
+      </div>
+      <div class="mlist" id="mlist"></div>
+    </div>
+  </div>
+
+  <!-- FILA 3 ──────────────────────────────────────────────────── -->
+  <div class="g21">
+    <div class="card">
+      <div class="card-title">
+        Inventari de Matèries Primeres
+        <span style="font-size:9px;color:var(--faint);font-weight:500">Actualitzat fa 5 min</span>
+      </div>
+      <div class="slist" id="slist"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Alertes i Incidències</div>
+      <div class="alerts">
+        <div class="al crit">
+          <span class="al-ico">●</span>
+          <div>
+            <div class="al-msg">Temperatura Confecció B2 > 85 °C</div>
+            <div class="al-sub">Fa 12 min · Risc d'averia imminent</div>
+          </div>
+        </div>
+        <div class="al warn">
+          <span class="al-ico">◆</span>
+          <div>
+            <div class="al-msg">Gore-Tex® sota estoc mínim (50 m)</div>
+            <div class="al-sub">Fa 1 h · Comanda suggerida: 500 m</div>
+          </div>
+        </div>
+        <div class="al warn">
+          <span class="al-ico">◆</span>
+          <div>
+            <div class="al-msg">Forro polar &lt; 80 unitats</div>
+            <div class="al-sub">Fa 2 h · Proveïdor: TextilSud SL</div>
+          </div>
+        </div>
+        <div class="al ok">
+          <span class="al-ico">✓</span>
+          <div>
+            <div class="al-msg">Manteniment Talladora A1 completat</div>
+            <div class="al-sub">Avui 08:30 · Pròxim: 15/06/2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILA 4 ──────────────────────────────────────────────────── -->
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">Facturació Mensual 2025 (milers €)</div>
+      <canvas id="revChart" height="155"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">Comandes Actives</div>
+      <table>
+        <thead>
+          <tr><th>Ref.</th><th>Producte</th><th>Unitats</th><th>Estat</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>#TM-2401</td><td>Jaqueta Trail K1</td><td>85</td><td><span class="pill pg">En curs</span></td></tr>
+          <tr><td>#TM-2402</td><td>Cortavent Summit</td><td>120</td><td><span class="pill pb">Planificat</span></td></tr>
+          <tr><td>#TM-2403</td><td>Caça tèrmica X3</td><td>40</td><td><span class="pill py">Retard</span></td></tr>
+          <tr><td>#TM-2404</td><td>Pantaló Alpine</td><td>60</td><td><span class="pill pg">En curs</span></td></tr>
+          <tr><td>#TM-2405</td><td>Base Layer Pro</td><td>200</td><td><span class="pill pb">Planificat</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">ROI Digitalització (27.600 €)</div>
+      <canvas id="roiChart" height="90"></canvas>
+      <div class="roi-grid">
+        <div class="roi-box">
+          <div class="roi-label">Estalvi mensual</div>
+          <div class="roi-val" style="color:var(--green)">2.100 €</div>
+        </div>
+        <div class="roi-box">
+          <div class="roi-label">Retorn en</div>
+          <div class="roi-val" style="color:var(--navy2)">13 m</div>
+        </div>
+        <div class="roi-box">
+          <div class="roi-label">ROI actual</div>
+          <div class="roi-val" style="color:var(--blue)">34%</div>
+        </div>
+        <div class="roi-box">
+          <div class="roi-label">Eficiència +</div>
+          <div class="roi-val" style="color:var(--amber)">+18%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  TÈXTILS MONTBLANC S.A. &nbsp;·&nbsp; Fundada 1985 &nbsp;·&nbsp; 23 treballadors &nbsp;·&nbsp;
+  Facturació 1,8 M€ &nbsp;·&nbsp; Dashboard de Producció — Projecte de Transformació Digital 27.600 €
+</footer>
+
+<script>
+// ── RELLOTGE ─────────────────────────────────────────────────────
+setInterval(() => { document.getElementById('clk').textContent = new Date().toLocaleTimeString('ca-ES'); }, 1000);
+document.getElementById('clk').textContent = new Date().toLocaleTimeString('ca-ES');
+
+// ── DADES DE PRODUCCIÓ ───────────────────────────────────────────
+const now = new Date();
+const labels = [], prodData = [];
+for (let i = 23; i >= 0; i--) {
+  const h = new Date(now - i * 3600000);
+  labels.push(h.getHours() + ':00');
+  prodData.push(Math.round(35 + Math.random() * 22));
+}
+
+// ── GRÀFIC DE LÍNIA ─────────────────────────────────────────────
+function lineChart(id, lbls, data, color, minOff=5, maxOff=5) {
+  const c = document.getElementById(id); if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = c.offsetWidth || 400, H = c.height; c.width = W;
+  const P = {t:16, r:12, b:28, l:40};
+  const w = W-P.l-P.r, h = H-P.t-P.b;
+  const mn = Math.min(...data)-minOff, mx = Math.max(...data)+maxOff;
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = '#EDEAE5'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = P.t + (h/4)*i;
+    ctx.beginPath(); ctx.moveTo(P.l, y); ctx.lineTo(P.l+w, y); ctx.stroke();
+    ctx.fillStyle = '#9BADC2'; ctx.font = '9px monospace'; ctx.textAlign = 'right';
+    ctx.fillText(Math.round(mx-((mx-mn)/4)*i), P.l-6, y+3);
+  }
+
+  // Gradient area
+  const gr = ctx.createLinearGradient(0, P.t, 0, P.t+h);
+  gr.addColorStop(0, color + '22'); gr.addColorStop(1, color + '05');
+  ctx.beginPath();
+  data.forEach((d,i) => {
+    const x = P.l+(w/(data.length-1))*i, y = P.t+h-((d-mn)/(mx-mn))*h;
+    i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+  });
+  ctx.lineTo(P.l+w, P.t+h); ctx.lineTo(P.l, P.t+h);
+  ctx.closePath(); ctx.fillStyle = gr; ctx.fill();
+
+  // Line
+  ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+  data.forEach((d,i) => {
+    const x = P.l+(w/(data.length-1))*i, y = P.t+h-((d-mn)/(mx-mn))*h;
+    i ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+  });
+  ctx.stroke();
+
+  // Last point dot
+  const lx = P.l+w, ld = data[data.length-1], ly = P.t+h-((ld-mn)/(mx-mn))*h;
+  ctx.beginPath(); ctx.arc(lx, ly, 3.5, 0, Math.PI*2);
+  ctx.fillStyle = color; ctx.fill();
+
+  // X labels
+  ctx.fillStyle = '#9BADC2'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+  lbls.forEach((l,i) => { if (i%4===0) ctx.fillText(l, P.l+(w/(lbls.length-1))*i, P.t+h+16); });
+}
+
+// ── GRÀFIC DE BARRES ────────────────────────────────────────────
+function barChart(id, lbls, data, colors) {
+  const c = document.getElementById(id); if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = c.offsetWidth||300, H = c.height; c.width = W;
+  const P = {t:16, r:8, b:28, l:36};
+  const w = W-P.l-P.r, h = H-P.t-P.b;
+  const mx = Math.max(...data)*1.15;
+  const bw = (w/data.length)*0.60, gap = (w/data.length)*0.40;
+  ctx.clearRect(0, 0, W, H);
+  ctx.strokeStyle = '#EDEAE5'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = P.t+(h/3)*i;
+    ctx.beginPath(); ctx.moveTo(P.l,y); ctx.lineTo(P.l+w,y); ctx.stroke();
+  }
+  data.forEach((d,i) => {
+    const x = P.l+(w/data.length)*i+gap/2, bh = (d/mx)*h, y = P.t+h-bh;
+    const gr = ctx.createLinearGradient(0, y, 0, P.t+h);
+    gr.addColorStop(0, colors[i]); gr.addColorStop(1, colors[i]+'55');
+    ctx.fillStyle = gr; ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, bw, bh, 2); else ctx.rect(x, y, bw, bh);
+    ctx.fill();
+    ctx.fillStyle = '#9BADC2'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(lbls[i], x+bw/2, P.t+h+16);
+    ctx.fillStyle = '#3A4E63'; ctx.font = '8.5px monospace';
+    ctx.fillText(d+'K', x+bw/2, y-4);
+  });
+}
+
+// ── MÀQUINES ─────────────────────────────────────────────────────
+const machines = [
+  {name:'Talladora A1', temp:67},
+  {name:'Talladora A2', temp:72},
+  {name:'Confecció B1', temp:74},
+  {name:'Confecció B2', temp:91},
+  {name:'Remalladora C', temp:61},
+  {name:'Planxa D1',    temp:55},
+];
+function tcol(t) { return t>85 ? '#B52424' : t>75 ? '#A35B08' : '#1E6B44'; }
+function renderMachines() {
+  document.getElementById('mlist').innerHTML = machines.map(m => {
+    const c = tcol(m.temp);
+    const icon = m.temp>85 ? '●' : m.temp>75 ? '◆' : '○';
+    return `<div class="mrow">
+      <span class="mname">${m.name}</span>
+      <div class="mbarbg"><div class="mbar" style="width:${m.temp}%;background:${c}"></div></div>
+      <span class="mtemp" style="color:${c}">${m.temp.toFixed(1)} °C</span>
+      <span style="font-size:10px;color:${c}">${icon}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── ESTOC ────────────────────────────────────────────────────────
+const stocks = [
+  {n:'Gore-Tex®',    cur:42,  min:50,  max:500, u:'m'},
+  {n:'Forro polar',  cur:78,  min:80,  max:400, u:'u'},
+  {n:'Niló tècnic',  cur:210, min:100, max:400, u:'m'},
+  {n:'Cordura®',     cur:185, min:80,  max:300, u:'m'},
+  {n:'Cremalleres',  cur:95,  min:120, max:600, u:'u'},
+  {n:'Fil tècnic',   cur:320, min:100, max:500, u:'bob'},
+];
+function renderStock() {
+  document.getElementById('slist').innerHTML = stocks.map(s => {
+    const pct = Math.min((s.cur/s.max)*100, 100);
+    const c = s.cur < s.min ? '#B52424' : s.cur < s.min*1.3 ? '#A35B08' : '#1E6B44';
+    const warn = s.cur < s.min ? ' !' : '';
+    return `<div class="srow">
+      <span class="sname" style="color:${s.cur<s.min?'#B52424':'var(--text2)'}">${s.n}${warn}</span>
+      <div class="sbarbg"><div class="sbar" style="width:${pct}%;background:${c}"></div></div>
+      <span class="sqty" style="color:${c}">${s.cur} ${s.u}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── ROI BARRES ───────────────────────────────────────────────────
+function drawROI() {
+  const phases = [
+    {l:'Anàlisi', v:3, col:'#2563A8'},
+    {l:'ERP+IoT', v:9, col:'#1E6B44'},
+    {l:'Web',     v:6, col:'#1A2D40'},
+    {l:'Formació',v:3.6, col:'#A35B08'},
+    {l:'Control', v:6, col:'#6B7C93'},
+  ];
+  const c = document.getElementById('roiChart'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = c.offsetWidth||300, H = c.height; c.width = W;
+  const bw = (W-20)/phases.length;
+  ctx.clearRect(0, 0, W, H);
+  phases.forEach((p,i) => {
+    const x = 10+i*bw, bh = (p.v/9)*(H-26), y = H-20-bh;
+    const gr = ctx.createLinearGradient(0, y, 0, H-20);
+    gr.addColorStop(0, p.col+'CC'); gr.addColorStop(1, p.col+'44');
+    ctx.fillStyle = gr; ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x+5, y, bw-10, bh, 2); else ctx.rect(x+5, y, bw-10, bh);
+    ctx.fill();
+    ctx.fillStyle = '#9BADC2'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(p.l, x+bw/2, H-4);
+    ctx.fillStyle = '#3A4E63'; ctx.font = '8.5px monospace';
+    ctx.fillText(p.v+'K', x+bw/2, y-3);
+  });
+}
+
+// ── ACTUALITZACIÓ EN TEMPS REAL ──────────────────────────────────
+let tick = 0;
+function update() {
+  tick++;
+  if (tick % 5 === 0) {
+    const v = Math.round(35 + Math.random() * 22);
+    prodData.shift(); prodData.push(v);
+    labels.shift();
+    labels.push(new Date().getHours() + ':' + String(new Date().getMinutes()).padStart(2,'0'));
+    lineChart('prodChart', labels, prodData, '#2563A8');
+    document.getElementById('uph').textContent = v;
+  }
+  machines.forEach(m => {
+    m.temp = Math.max(50, Math.min(95, m.temp + (Math.random()-0.48)*1.5));
+    m.temp = Math.round(m.temp*10)/10;
+  });
+  renderMachines();
+}
+
+// ── INICIALITZACIÓ ───────────────────────────────────────────────
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const months = ['Gen','Feb','Mar','Apr','Mai','Jun','Jul','Ago','Set','Oct','Nov','Des'];
+    const revData = [110,118,125,132,120,140,148,152,143,155,148,160];
+    const revColors = Array(12).fill('#1A2D40');
+
+    lineChart('prodChart', labels, prodData, '#2563A8');
+    lineChart('revChart', months, revData, '#1E6B44', 10, 10);
+    drawROI();
+    renderMachines();
+    renderStock();
+    setInterval(update, 2000);
+  }, 150);
+
+  window.addEventListener('resize', () => {
+    lineChart('prodChart', labels, prodData, '#2563A8');
+    lineChart('revChart',
+      ['Gen','Feb','Mar','Apr','Mai','Jun','Jul','Ago','Set','Oct','Nov','Des'],
+      [110,118,125,132,120,140,148,152,143,155,148,160], '#1E6B44', 10, 10);
+    drawROI();
+  });
+});
+</script>
+</body>
+</html>

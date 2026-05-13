@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Textils Montblanc, S.A. — Ropa Técnica de Montaña</title>
+<meta name="description" content="Textils Montblanc fabrica ropa técnica de montaña B2B en Igualada. Producción local, tejidos técnicos, ecommerce B2B, ERP e IoT para pedidos al por mayor.">
+<meta name="keywords" content="ropa técnica de montaña, tejidos técnicos B2B, fabricación textil Igualada, ecommerce B2B, ERP Odoo, Dolibarr, IoT textil">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="canonical" href="https://www.textilsmontblanc.com/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --c-black:   #0A0A0A;
+    --c-white:   #F5F4F0;
+    --c-blue:    #0047CC;
+    --c-blue-lt: #E8EFFE;
+    --c-ice:     #D6E4FF;
+    --c-orange:  #E84B00;
+    --c-slate:   #1C2533;
+    --c-muted:   #6B7280;
+    --c-border:  #E2E4E8;
+    --c-surf:    #F7F8FA;
+    --r: 4px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    color: var(--c-black);
+    background: #FFFFFF;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── UTILITIES ── */
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+  .section { padding: 100px 0; }
+  .section-sm { padding: 60px 0; }
+  .label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--c-blue);
+  }
+  h1,h2,h3,h4 { font-family: 'Oswald', sans-serif; text-transform: uppercase; line-height: 1.1; letter-spacing: .01em; }
+  .display { font-size: clamp(3.5rem, 8vw, 8rem); font-weight: 700; line-height: .95; }
+  .eyebrow { font-size: clamp(2rem, 4vw, 3.6rem); font-weight: 600; }
+  .eyebrow-sm { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 600; }
+  p.lead { font-size: 1.15rem; font-weight: 300; color: #3A3D45; max-width: 580px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: .95rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    padding: .85rem 2rem; border-radius: var(--r);
+    cursor: pointer; transition: all .18s; text-decoration: none; border: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--c-blue); color: #fff; }
+  .btn-primary:hover { background: #0039A6; transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: var(--c-black); border-color: var(--c-black); }
+  .btn-outline:hover { background: var(--c-black); color: #fff; }
+  .btn-outline-white { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }
+  .btn-outline-white:hover { background: rgba(255,255,255,.12); border-color: #fff; }
+  .btn-orange { background: var(--c-orange); color: #fff; }
+  .btn-orange:hover { background: #c93d00; transform: translateY(-1px); }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 3rem; align-items: center; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
+  .tag {
+    display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: .78rem;
+    font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    padding: .25rem .75rem; border-radius: 2px;
+  }
+  .tag-blue { background: var(--c-blue-lt); color: var(--c-blue); }
+  .tag-orange { background: #FFF0EB; color: var(--c-orange); }
+  .tag-dark { background: var(--c-slate); color: #fff; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f0f0f0; }
+  ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
+
+  /* ══ NAV ══ */
+  #nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    transition: background .25s, box-shadow .25s;
+  }
+  #nav.scrolled { background: rgba(10,10,10,.96); backdrop-filter: blur(8px); box-shadow: 0 1px 0 rgba(255,255,255,.08); }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 1280px; margin: 0 auto; padding: 0 2rem; height: 72px;
+  }
+  .nav-logo {
+    font-family: 'Oswald', sans-serif; text-transform: uppercase; text-decoration: none;
+    display: flex; align-items: baseline; gap: .4rem;
+  }
+  .nav-logo .main { font-size: 1.35rem; font-weight: 700; color: #fff; letter-spacing: .04em; }
+  .nav-logo .sub { font-size: .7rem; font-weight: 400; color: rgba(255,255,255,.45); letter-spacing: .1em; }
+  .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+  .nav-links a { font-family: 'Barlow Condensed', sans-serif; font-size: .88rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.72); text-decoration: none; transition: color .15s; }
+  .nav-links a:hover { color: #fff; }
+  .nav-actions { display: flex; align-items: center; gap: 1rem; }
+  .nav-cart {
+    display: flex; align-items: center; gap: .4rem;
+    font-family: 'Barlow Condensed', sans-serif; font-size: .85rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    color: rgba(255,255,255,.8); cursor: pointer; background: rgba(255,255,255,.1);
+    padding: .5rem 1rem; border-radius: var(--r); border: 1px solid rgba(255,255,255,.15);
+    transition: all .15s; position: relative;
+  }
+  .nav-cart:hover { background: rgba(255,255,255,.18); color: #fff; }
+  .cart-badge {
+    position: absolute; top: -6px; right: -6px;
+    background: var(--c-orange); color: #fff; font-size: .6rem; font-weight: 700;
+    width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ══ HERO ══ */
+  #hero {
+    position: relative; min-height: 100vh; display: flex; align-items: flex-end;
+    background: var(--c-black); overflow: hidden; padding-bottom: 80px;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 70% 50%, rgba(0,71,204,.22) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 50% at 20% 80%, rgba(232,75,0,.15) 0%, transparent 50%),
+      linear-gradient(135deg, #080C14 0%, #0D1625 40%, #111827 100%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .hero-accent {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 42%;
+    background: linear-gradient(180deg, rgba(0,71,204,.08) 0%, rgba(0,71,204,.18) 50%, rgba(0,71,204,.06) 100%);
+    border-left: 1px solid rgba(0,71,204,.2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2rem; padding: 6rem 3rem;
+  }
+  .hero-stat { text-align: center; color: #fff; }
+  .hero-stat .val { font-family: 'Oswald', sans-serif; font-size: 3.5rem; font-weight: 700; line-height: 1; }
+  .hero-stat .desc { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.45); margin-top: .3rem; }
+  .hero-stat-div { width: 1px; height: 40px; background: rgba(255,255,255,.1); }
+  .hero-content { position: relative; z-index: 2; width: 56%; padding: 0 2rem 0 calc((100vw - 1280px)/2 + 2rem); }
+  .hero-eyebrow { color: var(--c-blue); margin-bottom: 1.5rem; }
+  .hero-title { color: #fff; margin-bottom: 1.5rem; }
+  .hero-title span { color: var(--c-orange); }
+  .hero-sub { font-size: 1.1rem; font-weight: 300; color: rgba(255,255,255,.6); max-width: 520px; margin-bottom: 2.5rem; line-height: 1.7; }
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+    font-family: 'Barlow Condensed', sans-serif; font-size: .72rem; letter-spacing: .15em; text-transform: uppercase;
+    color: rgba(255,255,255,.3);
+  }
+  .scroll-hint-line { width: 1px; height: 40px; background: linear-gradient(to bottom, rgba(255,255,255,.3), transparent); animation: scrollPulse 2s ease-in-out infinite; }
+  @keyframes scrollPulse { 0%,100%{opacity:.3} 50%{opacity:.8} }
+
+  /* ══ TICKER ══ */
+  .ticker { background: var(--c-blue); padding: .75rem 0; overflow: hidden; }
+  .ticker-inner { display: flex; gap: 4rem; white-space: nowrap; animation: tickerRun 30s linear infinite; }
+  .ticker-item {
+    font-family: 'Barlow Condensed', sans-serif; font-size: .85rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(255,255,255,.85); display: flex; align-items: center; gap: 1rem; flex-shrink: 0;
+  }
+  .ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.4); }
+  @keyframes tickerRun { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* ══ BRAND STRIP ══ */
+  .brand-strip { border-bottom: 1px solid var(--c-border); padding: 2.5rem 0; background: var(--c-surf); }
+  .brand-strip .inner { display: flex; align-items: center; justify-content: space-around; gap: 2rem; flex-wrap: wrap; }
+  .brand-item { font-family: 'Oswald', sans-serif; font-size: 1.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #c0c4cc; transition: color .2s; cursor: default; }
+  .brand-item:hover { color: var(--c-black); }
+
+  /* ══ FEATURES ══ */
+  #features { background: var(--c-black); color: #fff; }
+  .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; border-left: 1px solid rgba(255,255,255,.07); }
+  .feat-card { padding: 2.5rem 2rem; border-right: 1px solid rgba(255,255,255,.07); border-bottom: 1px solid rgba(255,255,255,.07); transition: background .2s; }
+  .feat-card:hover { background: rgba(0,71,204,.1); }
+  .feat-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .feat-card h4 { font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: .5rem; color: #fff; }
+  .feat-card p { font-size: .875rem; color: rgba(255,255,255,.5); line-height: 1.6; }
+  .feat-card .feat-tag { display: inline-block; margin-bottom: .8rem; font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-blue); background: rgba(0,71,204,.12); padding: .2rem .6rem; border-radius: 2px; }
+
+  /* ══ PRODUCTS ══ */
+  .cat-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 3rem; border-bottom: 1px solid var(--c-border); padding-bottom: 1rem; }
+  .cat-tab { font-family: 'Barlow Condensed', sans-serif; font-size: .88rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: .5rem 1.25rem; border-radius: var(--r); cursor: pointer; transition: all .15s; border: none; background: transparent; color: var(--c-muted); }
+  .cat-tab.active, .cat-tab:hover { background: var(--c-black); color: #fff; }
+  .prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+  .prod-card { border: 1px solid var(--c-border); border-radius: 6px; overflow: hidden; background: #fff; transition: box-shadow .2s, transform .2s; }
+  .prod-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,.1); transform: translateY(-3px); }
+  .prod-thumb {
+    aspect-ratio: 4/3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem;
+    position: relative; overflow: hidden;
+  }
+  .prod-thumb-inner { font-size: 4rem; opacity: .5; }
+  .prod-thumb-label { font-family: 'Oswald', sans-serif; font-size: .9rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; opacity: .4; }
+  .prod-badge { position: absolute; top: .75rem; left: .75rem; }
+  .prod-body { padding: 1.25rem 1.25rem 1rem; }
+  .prod-category { font-family: 'Barlow Condensed', sans-serif; font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--c-blue); margin-bottom: .4rem; }
+  .prod-name { font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 600; text-transform: uppercase; margin-bottom: .4rem; }
+  .prod-desc { font-size: .825rem; color: var(--c-muted); line-height: 1.5; margin-bottom: 1rem; }
+  .prod-meta { display: flex; align-items: center; justify-content: space-between; padding-top: .75rem; border-top: 1px solid var(--c-border); }
+  .prod-moq { font-family: 'Barlow Condensed', sans-serif; font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--c-muted); }
+  .prod-action { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c-blue); cursor: pointer; background: none; border: none; display: flex; align-items: center; gap: .3rem; transition: gap .15s; }
+  .prod-action:hover { gap: .6rem; }
+  .prod-weight { font-family: 'Barlow Condensed', sans-serif; font-size: .78rem; color: var(--c-muted); }
+
+  /* ══ FICHA DETAIL ══ */
+  .ficha {
+    background: var(--c-surf); border: 1px solid var(--c-border); border-radius: 6px;
+    padding: 1.5rem; margin-top: 1rem;
+  }
+  .ficha h5 { font-family: 'Oswald', sans-serif; font-size: .9rem; font-weight: 600; text-transform: uppercase; margin-bottom: .75rem; letter-spacing: .06em; }
+  .ficha-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .5rem; }
+  .ficha-item { font-size: .78rem; }
+  .ficha-item strong { display: block; font-weight: 600; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--c-muted); margin-bottom: .1rem; }
+
+  /* ══ ABOUT ══ */
+  #about { background: var(--c-surf); }
+  .about-kpi-row { display: flex; gap: 2rem; flex-wrap: wrap; margin-top: 3rem; padding-top: 3rem; border-top: 1px solid var(--c-border); }
+  .about-kpi { flex: 1; min-width: 120px; }
+  .about-kpi .n { font-family: 'Oswald', sans-serif; font-size: 2.8rem; font-weight: 700; color: var(--c-blue); }
+  .about-kpi .d { font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--c-muted); margin-top: .25rem; }
+  .timeline { position: relative; padding-left: 2rem; }
+  .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--c-blue), var(--c-border)); }
+  .tl-item { position: relative; padding-bottom: 2rem; }
+  .tl-dot { position: absolute; left: -2.4rem; top: .3rem; width: 12px; height: 12px; border-radius: 50%; background: var(--c-blue); border: 2px solid #fff; box-shadow: 0 0 0 3px rgba(0,71,204,.2); }
+  .tl-year { font-family: 'Barlow Condensed', sans-serif; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c-blue); margin-bottom: .25rem; }
+  .tl-text { font-size: .9rem; color: #3A3D45; line-height: 1.55; }
+
+  /* ══ VALUES ══ */
+  .value-card { padding: 2rem; border-radius: 6px; border: 1px solid var(--c-border); background: #fff; transition: border-color .2s; }
+  .value-card:hover { border-color: var(--c-blue); }
+  .value-icon { font-size: 1.5rem; margin-bottom: 1rem; }
+  .value-card h4 { font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .5rem; }
+  .value-card p { font-size: .875rem; color: var(--c-muted); line-height: 1.6; }
+
+  /* ══ SERVICES ══ */
+  #services { background: var(--c-slate); color: #fff; }
+  .svc-card {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 6px;
+    padding: 2.25rem 2rem; transition: background .2s, border-color .2s;
+  }
+  .svc-card:hover { background: rgba(0,71,204,.1); border-color: rgba(0,71,204,.3); }
+  .svc-num { font-family: 'Oswald', sans-serif; font-size: 3rem; font-weight: 700; color: rgba(255,255,255,.07); line-height: 1; margin-bottom: .75rem; }
+  .svc-card h3 { font-family: 'Oswald', sans-serif; font-size: 1.15rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .75rem; color: #fff; }
+  .svc-card p { font-size: .875rem; color: rgba(255,255,255,.55); line-height: 1.65; margin-bottom: 1.25rem; }
+  .svc-list { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+  .svc-list li { font-size: .825rem; color: rgba(255,255,255,.6); display: flex; align-items: center; gap: .5rem; }
+  .svc-list li::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--c-blue); flex-shrink: 0; }
+  .svc-hero { grid-column: span 2; display: flex; align-items: stretch; background: linear-gradient(135deg, var(--c-blue) 0%, #0039A6 100%) !important; border-color: var(--c-blue) !important; }
+  .svc-hero-content { padding: 2.25rem 2rem; flex: 1; }
+  .svc-hero h2 { font-family: 'Oswald', sans-serif; font-size: 2rem; font-weight: 700; text-transform: uppercase; color: #fff; margin-bottom: 1rem; }
+  .svc-hero p { color: rgba(255,255,255,.8); font-size: .95rem; line-height: 1.65; margin-bottom: 1.5rem; }
+  .svc-hero-visual { width: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border-left: 1px solid rgba(255,255,255,.15); gap: 1.5rem; flex-shrink: 0; }
+  .svc-pill { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 100px; padding: .5rem 1.25rem; font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.9); text-align: center; white-space: nowrap; }
+
+  /* ══ PROCESS ══ */
+  #process { overflow: hidden; }
+  .process-strip { display: flex; gap: 0; position: relative; }
+  .process-strip::before { content: ''; position: absolute; top: 28px; left: 0; right: 0; height: 2px; background: var(--c-border); z-index: 0; }
+  .process-step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 1rem; position: relative; z-index: 1; }
+  .ps-num { width: 56px; height: 56px; border-radius: 50%; background: var(--c-black); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; border: 3px solid #fff; }
+  .ps-num.active { background: var(--c-blue); }
+  .ps-title { font-family: 'Oswald', sans-serif; font-size: .9rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-bottom: .4rem; }
+  .ps-desc { font-size: .78rem; color: var(--c-muted); line-height: 1.5; }
+
+  /* ══ B2B ECOMMERCE ══ */
+  #b2b { background: var(--c-surf); }
+  .b2b-layout { display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start; }
+  .order-form { background: #fff; border: 1px solid var(--c-border); border-radius: 6px; }
+  .order-form-head { padding: 1.5rem 1.5rem 0; border-bottom: 1px solid var(--c-border); padding-bottom: 1.25rem; margin-bottom: 1.25rem; }
+  .order-form-head h3 { font-family: 'Oswald', sans-serif; font-size: 1.05rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .order-form-body { padding: 0 1.5rem 1.5rem; }
+  .order-line { display: grid; grid-template-columns: 1fr auto auto auto; gap: .75rem; align-items: center; padding: .75rem 0; border-bottom: 1px solid var(--c-border); }
+  .order-line:last-child { border-bottom: none; }
+  .ol-name { font-family: 'Barlow Condensed', sans-serif; font-size: .95rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .ol-ref { font-size: .75rem; color: var(--c-muted); }
+  .ol-qty { width: 80px; padding: .35rem .6rem; border: 1px solid var(--c-border); border-radius: var(--r); font-family: 'Barlow', sans-serif; font-size: .875rem; text-align: center; }
+  .ol-price { font-family: 'Oswald', sans-serif; font-size: .95rem; font-weight: 600; min-width: 70px; text-align: right; }
+  .ol-remove { background: none; border: none; cursor: pointer; color: var(--c-muted); font-size: 1rem; padding: .25rem; border-radius: var(--r); transition: all .15s; }
+  .ol-remove:hover { background: #fee; color: #c00; }
+  .cart-summary { background: #fff; border: 1px solid var(--c-border); border-radius: 6px; position: sticky; top: 90px; }
+  .cs-head { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--c-border); }
+  .cs-head h3 { font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .cs-body { padding: 1.25rem 1.5rem; }
+  .cs-row { display: flex; justify-content: space-between; font-size: .875rem; margin-bottom: .6rem; color: #3A3D45; }
+  .cs-row.total { font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 600; color: var(--c-black); padding-top: .75rem; margin-top: .75rem; border-top: 2px solid var(--c-black); margin-bottom: 0; }
+  .cs-note { font-size: .775rem; color: var(--c-muted); line-height: 1.5; margin: 1rem 0; padding: .75rem; background: var(--c-blue-lt); border-radius: var(--r); }
+  .cs-footer { padding: 1.25rem 1.5rem; border-top: 1px solid var(--c-border); display: flex; flex-direction: column; gap: .75rem; }
+  .form-field { margin-bottom: 1rem; }
+  .form-field label { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c-muted); margin-bottom: .35rem; }
+  .form-field input, .form-field select, .form-field textarea {
+    width: 100%; padding: .65rem .9rem; border: 1px solid var(--c-border); border-radius: var(--r);
+    font-family: 'Barlow', sans-serif; font-size: .875rem; color: var(--c-black);
+    background: #fff; transition: border-color .15s;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 3px rgba(0,71,204,.1); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .quote-form { background: #fff; border: 1px solid var(--c-border); border-radius: 6px; padding: 2rem; margin-top: 2rem; }
+  .quote-form h3 { font-family: 'Oswald', sans-serif; font-size: 1.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--c-border); }
+
+  /* ══ CTA BAND ══ */
+  .cta-band {
+    background: var(--c-black); color: #fff; padding: 80px 0;
+    position: relative; overflow: hidden;
+  }
+  .cta-band::before {
+    content: ''; position: absolute; left: -10%; top: -50%; width: 50%; height: 200%;
+    background: radial-gradient(ellipse, rgba(0,71,204,.3) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .cta-inner { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 3rem; flex-wrap: wrap; }
+  .cta-text h2 { font-family: 'Oswald', sans-serif; font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; text-transform: uppercase; margin-bottom: .75rem; }
+  .cta-text p { color: rgba(255,255,255,.6); font-size: 1rem; max-width: 480px; }
+  .cta-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  /* ══ CONTACT ══ */
+  #contact { background: #fff; }
+  .contact-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; }
+  .contact-info h3 { font-family: 'Oswald', sans-serif; font-size: 1.05rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 1rem; }
+  .contact-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.75rem; }
+  .ci-icon { font-size: 1.1rem; margin-top: .1rem; flex-shrink: 0; }
+  .ci-label { font-family: 'Barlow Condensed', sans-serif; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c-muted); }
+  .ci-val { font-size: .925rem; color: var(--c-black); line-height: 1.5; margin-top: .1rem; }
+  .map-placeholder {
+    height: 280px; background: linear-gradient(135deg, #E8EFFE 0%, #D6E4FF 100%);
+    border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem;
+    border: 1px solid var(--c-ice); margin-top: 1.5rem;
+  }
+  .map-placeholder span { font-family: 'Oswald', sans-serif; font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--c-blue); }
+
+  /* ══ FOOTER ══ */
+  footer { background: var(--c-black); color: rgba(255,255,255,.6); padding: 60px 0 30px; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+  .footer-logo { font-family: 'Oswald', sans-serif; font-size: 1.2rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #fff; margin-bottom: .75rem; }
+  .footer-tagline { font-size: .875rem; line-height: 1.6; margin-bottom: 1.25rem; }
+  .footer-cert { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .footer-cert span { font-family: 'Barlow Condensed', sans-serif; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: .25rem .6rem; border: 1px solid rgba(255,255,255,.15); border-radius: 2px; color: rgba(255,255,255,.5); }
+  .footer-col h5 { font-family: 'Oswald', sans-serif; font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: rgba(255,255,255,.4); margin-bottom: 1rem; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .footer-col a { color: rgba(255,255,255,.55); text-decoration: none; font-size: .875rem; transition: color .15s; }
+  .footer-col a:hover { color: #fff; }
+  .footer-bar { border-top: 1px solid rgba(255,255,255,.07); padding-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-size: .8rem; }
+
+  /* ══ MODAL ══ */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 2rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 8px; max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal-head { padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--c-border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-head h3 { font-family: 'Oswald', sans-serif; font-size: 1.15rem; font-weight: 600; text-transform: uppercase; }
+  .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--c-muted); line-height: 1; padding: .25rem; border-radius: var(--r); }
+  .modal-close:hover { background: var(--c-border); }
+  .modal-body { padding: 1.5rem; }
+  .modal-thumb { height: 200px; border-radius: 6px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: .5rem; }
+  .spec-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+  .spec-table td { padding: .6rem .5rem; border-bottom: 1px solid var(--c-border); }
+  .spec-table td:first-child { font-weight: 600; font-family: 'Barlow Condensed', sans-serif; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--c-muted); width: 40%; }
+  .modal-actions { padding: 0 1.5rem 1.5rem; display: flex; gap: 1rem; }
+
+  /* ══ TOAST ══ */
+  .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--c-slate); color: #fff; padding: 1rem 1.5rem; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: .9rem; font-weight: 600; letter-spacing: .06em; z-index: 3000; display: none; animation: toastIn .25s ease; }
+  .toast.show { display: block; }
+  .toast-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--c-blue); border-radius: 0 0 6px 6px; animation: toastBar 3s linear forwards; }
+  @keyframes toastIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes toastBar { from{width:100%} to{width:0} }
+  .visually-hidden { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+  }
+
+  /* ══ RESPONSIVE ══ */
+  @media (max-width: 900px) {
+    .hero-accent { display: none; }
+    .hero-content { width: 100%; padding: 0 2rem; }
+    .b2b-layout { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .svc-hero { grid-column: span 1; flex-direction: column; }
+    .svc-hero-visual { width: 100%; border-left: none; border-top: 1px solid rgba(255,255,255,.15); flex-direction: row; flex-wrap: wrap; }
+    .process-strip { flex-direction: column; gap: 1.5rem; }
+    .process-strip::before { display: none; }
+    .process-step { flex-direction: row; text-align: left; gap: 1rem; align-items: flex-start; }
+  }
+  @media (max-width: 600px) {
+    .section { padding: 60px 0; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .order-line { grid-template-columns: 1fr auto; }
+    .ol-price, .ol-remove { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav id="nav" role="navigation" aria-label="Menú principal de Textils Montblanc">
+  <div class="nav-inner">
+    <a href="#hero" class="nav-logo">
+      <span class="main">Textils Montblanc</span>
+      <span class="sub">S.A. · Igualada</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#products">Catálogo</a></li>
+      <li><a href="#about">Empresa</a></li>
+      <li><a href="#services">Servicios</a></li>
+      <li><a href="#b2b">B2B</a></li>
+      <li><a href="#contact">Contacto</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button type="button" class="nav-cart" onclick="document.getElementById('b2b').scrollIntoView({behavior:'smooth'})" aria-label="Ver pedido B2B">
+        🛒 Pedido
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+      <a href="#b2b" class="btn btn-primary" style="padding:.55rem 1.25rem; font-size:.82rem;">Presupuesto</a>
+      <a href="https://wa.me/34930000000?text=Hola%20Textils%20Montblanc%2C%20quiero%20informaci%C3%B3n%20B2B" target="_blank" rel="noopener noreferrer" class="btn btn-outline-white" style="padding:.55rem 1rem; font-size:.82rem;">WhatsApp</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-accent">
+    <div class="hero-stat">
+      <div class="val">+35</div>
+      <div class="desc">Años de experiencia</div>
+    </div>
+    <div class="hero-stat-div"></div>
+    <div class="hero-stat">
+      <div class="val">23</div>
+      <div class="desc">Profesionales</div>
+    </div>
+    <div class="hero-stat-div"></div>
+    <div class="hero-stat">
+      <div class="val">4.0</div>
+      <div class="desc">Industria digital</div>
+    </div>
+    <div class="hero-stat-div"></div>
+    <div class="hero-stat">
+      <div class="val">1.200m²</div>
+      <div class="desc">Planta de producción</div>
+    </div>
+  </div>
+  <div class="hero-content">
+    <p class="label hero-eyebrow">Fabricación técnica · Igualada, Barcelona · Desde 1985</p>
+    <h1 class="display hero-title">Tejidos<br>que rinden<br>en la <span>cima.</span></h1>
+    <p class="hero-sub">Fabricamos ropa técnica para deportes de montaña con los tejidos de mayor rendimiento del mercado. Producción a medida, pedidos B2B y entregas en toda Europa.</p>
+    <div class="hero-btns">
+      <a href="#products" class="btn btn-primary">Ver catálogo →</a>
+      <a href="#b2b" class="btn btn-outline-white">Solicitar presupuesto</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-hint-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ══ TICKER ══ -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker">
+    <span class="ticker-item"><span class="ticker-dot"></span>Gore-Tex® Partner</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>ISO 9001 Certificada</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>OEKO-TEX® Standard 100</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Producción en Igualada, Barcelona</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Pedidos mínimos desde 50 uds.</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Entrega 10–21 días</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Personalización completa de tejidos</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Industria 4.0 · Trazabilidad digital</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Gore-Tex® Partner</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>ISO 9001 Certificada</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>OEKO-TEX® Standard 100</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Producción en Igualada, Barcelona</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Pedidos mínimos desde 50 uds.</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Entrega 10–21 días</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Personalización completa de tejidos</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Industria 4.0 · Trazabilidad digital</span>
+  </div>
+</div>
+
+<!-- ══ BRAND STRIP ══ -->
+<div class="brand-strip">
+  <div class="inner container">
+    <span class="brand-item">Patagonia</span>
+    <span class="brand-item">Salomon</span>
+    <span class="brand-item">Arc'teryx</span>
+    <span class="brand-item">Rab</span>
+    <span class="brand-item">Mammut</span>
+    <span class="brand-item">Millet</span>
+    <span class="brand-item">Black Diamond</span>
+  </div>
+</div>
+
+<!-- ══ FEATURES ══ -->
+<section id="features" class="section-sm">
+  <div class="container">
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-tag">Tecnología</div>
+        <div class="feat-icon">🧪</div>
+        <h4>Tejidos de alto rendimiento</h4>
+        <p>Laminados Gore-Tex®, membranas impermeables y tratamientos DWR de última generación para condiciones extremas.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-tag">Producción</div>
+        <div class="feat-icon">🏭</div>
+        <h4>1.200 m² de planta propia</h4>
+        <p>Corte y confección semi-automática con trazabilidad digital completa en cada pedido desde 2025.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-tag">B2B</div>
+        <div class="feat-icon">📦</div>
+        <h4>Pedidos desde 50 unidades</h4>
+        <p>Mínimos de pedido adaptados a marcas emergentes y grandes cuentas. Presupuesto en 24 h.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-tag">Sostenibilidad</div>
+        <div class="feat-icon">♻️</div>
+        <h4>OEKO-TEX® & materiales reciclados</h4>
+        <p>Fibras recicladas certificadas, control de residuos y política de consumo energético responsable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRODUCTS ══ -->
+<section id="products" class="section">
+  <div class="container">
+    <p class="label">Catálogo de tejidos técnicos</p>
+    <h2 class="eyebrow" style="margin:.5rem 0 .75rem;">Líneas de producto</h2>
+    <p class="lead">Tejidos diseñados para rendir donde otros fallan. Cada referencia está disponible en múltiples gramaturas, colores y acabados.</p>
+
+    <div class="cat-tabs" style="margin-top:2.5rem;">
+        <button type="button" class="cat-tab active" onclick="filterCat('all', this)">Todos</button>
+      <button type="button" class="cat-tab" onclick="filterCat('shell', this)">Shell & Hardshell</button>
+      <button type="button" class="cat-tab" onclick="filterCat('mid', this)">Midlayer</button>
+      <button type="button" class="cat-tab" onclick="filterCat('base', this)">Base Layer</button>
+      <button type="button" class="cat-tab" onclick="filterCat('acc', this)">Accesorios</button>
+      <button type="button" class="cat-tab" onclick="filterCat('custom', this)">A medida</button>
+    </div>
+
+    <div class="prod-grid" id="prodGrid"></div>
+  </div>
+</section>
+
+<!-- ══ ABOUT ══ -->
+<section id="about" class="section">
+  <div class="container">
+    <div class="grid-2">
+      <div>
+        <p class="label">Quiénes somos</p>
+        <h2 class="eyebrow" style="margin:.5rem 0 1.25rem;">Más de 35 años cosiendo montaña</h2>
+        <p class="lead" style="max-width:100%;">Fundada en 1985 en el Polígono Industrial Les Comes de Igualada, Textils Montblanc, S.A. es una empresa familiar que nació con una sola misión: fabricar ropa que proteja de verdad en la montaña.</p>
+        <p style="margin-top:1rem; color:#3A3D45; font-size:.925rem; line-height:1.7;">Hoy somos 23 profesionales apasionados del textil técnico que trabajamos con marcas de toda Europa. En 2025 iniciamos nuestra transformación digital 4.0 para integrar trazabilidad, IoT industrial y e-commerce B2B en nuestros procesos, sin perder el saber hacer artesanal que nos define.</p>
+        <div class="about-kpi-row">
+          <div class="about-kpi"><div class="n">1985</div><div class="d">Año de fundación</div></div>
+          <div class="about-kpi"><div class="n">23</div><div class="d">Trabajadores</div></div>
+          <div class="about-kpi"><div class="n">1,8M€</div><div class="d">Facturación 2023</div></div>
+          <div class="about-kpi"><div class="n">100%</div><div class="d">Producción propia</div></div>
+        </div>
+      </div>
+      <div>
+        <p class="label" style="margin-bottom:1.25rem;">Nuestra trayectoria</p>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-year">1985</div>
+            <div class="tl-text">Fundación de Textils Montblanc en Igualada por la familia Soler. Primera nave de 400 m² y 5 empleados especializados en ropa de esquí.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-year">1998</div>
+            <div class="tl-text">Expansión a 1.200 m² e incorporación de maquinaria de corte automático. Primeras certificaciones de calidad ISO 9001.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-year">2010</div>
+            <div class="tl-text">Incorporación de la tecnología Gore-Tex® a la línea principal y apertura de mercado europeo (Francia, Italia, Alemania).</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-year">2019</div>
+            <div class="tl-text">Primera colección de ropa técnica con fibras 100% recicladas. Certificación OEKO-TEX® Standard 100. Facturación supera 1,5 M€.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-year">2025</div>
+            <div class="tl-text">Inicio del plan de Transformación Digital 4.0: ERP industrial, IoT, trazabilidad completa y nuevo e-commerce B2B.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-4" style="margin-top:4rem;">
+      <div class="value-card">
+        <div class="value-icon">🏔️</div>
+        <h4>Mentalidad de cima</h4>
+        <p>Aplicamos a nuestros procesos la misma exigencia que la montaña exige al montañero: sin margen de error.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🤝</div>
+        <h4>Compromiso B2B</h4>
+        <p>Somos el socio de fabricación de marcas que no quieren comprometer calidad. Flexibilidad real, no promesas.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🌿</div>
+        <h4>Fabricación responsable</h4>
+        <p>Materiales reciclados, control de residuos textiles y reducción activa del consumo energético en planta.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">⚙️</div>
+        <h4>Innovación continua</h4>
+        <p>Desde sensores IoT hasta IA aplicada a la producción, nuestra transformación digital es permanente.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SERVICES ══ -->
+<section id="services" class="section">
+  <div class="container">
+    <p class="label" style="color:rgba(255,255,255,.5);">Para empresas</p>
+    <h2 class="eyebrow" style="color:#fff; margin:.5rem 0 .75rem;">Servicios B2B</h2>
+    <p style="color:rgba(255,255,255,.55); max-width:540px; font-size:1rem; line-height:1.7; margin-bottom:3rem;">Diseñamos el servicio en torno a tu proceso productivo, no al revés. Desde el pedido estándar hasta la producción white-label con etiqueta propia.</p>
+
+    <div class="grid-3" style="gap:1.25rem;">
+      <div class="svc-hero">
+        <div class="svc-hero-content">
+          <div class="svc-num" style="color:rgba(255,255,255,.12)">01</div>
+          <h2>Transformación Digital 4.0</h2>
+          <p>En 2025 completamos la integración de un ERP industrial (Odoo), sensores IoT en planta y trazabilidad digital de cada prenda. Tu pedido, en tiempo real.</p>
+          <a href="#contact" class="btn btn-outline-white" style="font-size:.85rem;">Saber más →</a>
+        </div>
+        <div class="svc-hero-visual">
+          <div class="svc-pill">ERP Odoo</div>
+          <div class="svc-pill">IoT en planta</div>
+          <div class="svc-pill">Trazabilidad digital</div>
+          <div class="svc-pill">E-commerce B2B</div>
+          <div class="svc-pill">Formación 4.0</div>
+        </div>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-num">02</div>
+        <h3>Pedidos al por mayor</h3>
+        <p>Gestión de pedidos recurrentes para distribuidores, tiendas especializadas y marcas. Mínimos desde 50 uds.</p>
+        <ul class="svc-list">
+          <li>Stock bajo demanda y previsión anual</li>
+          <li>Tarifas por volumen progresivas</li>
+          <li>Factura proforma y condiciones NET30</li>
+          <li>Portal de cliente con seguimiento</li>
+        </ul>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-num">03</div>
+        <h3>Producción a medida</h3>
+        <p>Confección con tus tejidos o con los nuestros, siguiendo tu ficha técnica o desarrollando una de nueva.</p>
+        <ul class="svc-list">
+          <li>Desarrollo de patrones y prototipos</li>
+          <li>Prueba de colores y acabados</li>
+          <li>Bordado, serigrafía y etiquetado propio</li>
+          <li>Control de calidad en cada fase</li>
+        </ul>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-num">04</div>
+        <h3>Plazos y logística</h3>
+        <p>Coordinamos producción y entregas para que tu marca nunca pare. Capacidad de reposición express.</p>
+        <ul class="svc-list">
+          <li>Prototipo: 5–7 días laborables</li>
+          <li>Serie corta (50–200 uds.): 10–14 días</li>
+          <li>Serie larga (+200 uds.): 18–25 días</li>
+          <li>Entrega DDP Europa disponible</li>
+        </ul>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-num">05</div>
+        <h3>Asesoría técnica</h3>
+        <p>Nuestro equipo de producto te asesora en la selección del tejido, la normativa aplicable y el coste de fabricación.</p>
+        <ul class="svc-list">
+          <li>Ficha técnica sin coste</li>
+          <li>Test de rendimiento certificados</li>
+          <li>Asesoría en normativas EN ISO</li>
+          <li>Validación de muestras in situ</li>
+        </ul>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-num">06</div>
+        <h3>Sostenibilidad & certificaciones</h3>
+        <p>Ayudamos a tu marca a cumplir los requisitos de sostenibilidad cada vez más exigidos por el mercado europeo.</p>
+        <ul class="svc-list">
+          <li>Fibras recicladas certificadas GRS</li>
+          <li>OEKO-TEX® Standard 100</li>
+          <li>Trazabilidad cadena de suministro</li>
+          <li>Informe huella de carbono disponible</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROCESS ══ -->
+<section id="process" class="section-sm">
+  <div class="container">
+    <p class="label" style="text-align:center; margin-bottom:.75rem;">Así trabajamos</p>
+    <h2 class="eyebrow-sm" style="text-align:center; margin-bottom:3rem;">De la idea al producto en 5 pasos</h2>
+    <div class="process-strip">
+      <div class="process-step">
+        <div class="ps-num active">01</div>
+        <div>
+          <div class="ps-title">Consulta inicial</div>
+          <div class="ps-desc">Defines necesidades, volumen y calendario. Te respondemos en menos de 24 h.</div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="ps-num">02</div>
+        <div>
+          <div class="ps-title">Ficha técnica</div>
+          <div class="ps-desc">Elaboramos la propuesta de tejido, patronaje y acabados. Sin coste.</div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="ps-num">03</div>
+        <div>
+          <div class="ps-title">Prototipo</div>
+          <div class="ps-desc">Muestra física en 5–7 días para tu validación y test de campo.</div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="ps-num">04</div>
+        <div>
+          <div class="ps-title">Producción</div>
+          <div class="ps-desc">Fabricación con trazabilidad digital y control de calidad en tiempo real.</div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="ps-num">05</div>
+        <div>
+          <div class="ps-title">Entrega & soporte</div>
+          <div class="ps-desc">Envío DDP Europa + portal de seguimiento + soporte postventa activo.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ B2B ECOMMERCE ══ -->
+<section id="b2b" class="section">
+  <div class="container">
+    <p class="label">Plataforma B2B</p>
+    <h2 class="eyebrow" style="margin:.5rem 0 .5rem;">Haz tu pedido</h2>
+    <p class="lead" style="margin-bottom:2.5rem;">Selecciona referencias, indica cantidades y envíanos la solicitud. Recibirás presupuesto firme en menos de 24 h laborables.</p>
+
+    <div class="b2b-layout">
+      <div>
+        <div class="order-form">
+          <div class="order-form-head">
+            <h3>Líneas de pedido</h3>
+          </div>
+          <div class="order-form-body" id="orderLines">
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+        <div class="quote-form" id="quoteForm">
+          <h3>Datos de la empresa</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Empresa *</label>
+              <input type="text" placeholder="Nombre de tu empresa">
+            </div>
+            <div class="form-field">
+              <label>CIF / NIF</label>
+              <input type="text" placeholder="B12345678">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Nombre de contacto *</label>
+              <input type="text" placeholder="Nombre y apellidos">
+            </div>
+            <div class="form-field">
+              <label>Teléfono</label>
+              <input type="tel" placeholder="+34 600 000 000">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Email *</label>
+            <input type="email" placeholder="tu@empresa.com">
+          </div>
+          <div class="form-field">
+            <label>Dirección de entrega</label>
+            <input type="text" placeholder="Calle, número, ciudad, CP, país">
+          </div>
+          <div class="form-field">
+            <label>Notas del pedido</label>
+            <textarea rows="3" placeholder="Colores específicos, etiquetado propio, fecha límite de entrega..."></textarea>
+          </div>
+          <button type="button" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="submitQuote()">
+            Enviar solicitud de presupuesto →
+          </button>
+        </div>
+      </div>
+
+      <div class="cart-summary" id="cartSummary">
+        <div class="cs-head">
+          <h3>Resumen del pedido</h3>
+        </div>
+        <div class="cs-body" id="cartBody">
+          <p style="font-size:.85rem; color:var(--c-muted);">Añade referencias desde el catálogo para ver el resumen.</p>
+        </div>
+        <div class="cs-footer">
+          <a href="#products" class="btn btn-outline" style="justify-content:center; font-size:.82rem;">+ Añadir más referencias</a>
+        </div>
+      </div>
+      <div class="quote-form" style="margin-top:1.5rem; background:#F4F7FF; border-color:rgba(0,71,204,.18);">
+        <h3>Próximamente: área privada</h3>
+        <p style="font-size:.92rem; color:#3A3D45; line-height:1.65; margin-bottom:1rem;">Clientes recurrentes podrán acceder a un portal seguro con pedidos históricos, facturas, albaranes y seguimiento de producción conectado a ERP y sensores IoT.</p>
+        <p style="font-size:.82rem; color:var(--c-muted);">Preparado para integración futura con Odoo o Dolibarr para gestión de pedidos, stock y trazabilidad digital.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA BAND ══ -->
+<div class="cta-band">
+  <div class="container">
+    <div class="cta-inner">
+      <div class="cta-text">
+        <h2>¿Listo para trabajar juntos?</h2>
+        <p>Cuéntanos tu proyecto y te enviamos una propuesta sin compromiso en menos de 24 horas laborables.</p>
+      </div>
+      <div class="cta-actions">
+        <a href="#contact" class="btn btn-primary">Contactar ahora</a>
+        <a href="tel:+34930000000" class="btn btn-outline-white">📞 +34 93 000 00 00</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<section id="contact" class="section">
+  <div class="container">
+    <p class="label">Hablemos</p>
+    <h2 class="eyebrow" style="margin:.5rem 0 2.5rem;">Contacto</h2>
+
+    <div class="contact-grid">
+      <div>
+        <div class="contact-item">
+          <div class="ci-icon">📍</div>
+          <div>
+            <div class="ci-label">Dirección</div>
+            <div class="ci-val">Polígono Industrial Les Comes<br>Igualada, Barcelona (España)</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="ci-icon">📞</div>
+          <div>
+            <div class="ci-label">Teléfono</div>
+            <div class="ci-val"><a href="tel:+34930000000" style="color:var(--c-black); text-decoration:none;">+34 93 000 00 00</a></div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="ci-icon">💬</div>
+          <div>
+            <div class="ci-label">WhatsApp Business</div>
+            <div class="ci-val"><a href="https://wa.me/34930000000?text=Hola%20Textils%20Montblanc%2C%20quiero%20informaci%C3%B3n%20B2B" target="_blank" rel="noopener noreferrer" style="color:var(--c-blue); text-decoration:none;">Iniciar chat</a></div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="ci-icon">✉️</div>
+          <div>
+            <div class="ci-label">Email comercial</div>
+            <div class="ci-val"><a href="mailto:comercial@textilsmontblanc.com" style="color:var(--c-blue); text-decoration:none;">comercial@textilsmontblanc.com</a></div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="ci-icon">🕐</div>
+          <div>
+            <div class="ci-label">Horario de atención</div>
+            <div class="ci-val">Lun–Jue: 8:00–18:00<br>Vie: 8:00–14:00</div>
+          </div>
+        </div>
+        <div class="map-placeholder">
+          <span style="font-size:2rem;">🗺️</span>
+          <span>Polígono Industrial Les Comes · Igualada</span>
+          <a href="https://maps.google.com/?q=Igualada+Barcelona" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="font-size:.78rem; padding:.45rem 1rem; margin-top:.5rem;">Ver en Google Maps →</a>
+        </div>
+      </div>
+
+      <div>
+        <div style="background:var(--c-surf); border:1px solid var(--c-border); border-radius:6px; padding:2rem;">
+          <h3 style="font-family:'Oswald',sans-serif; text-transform:uppercase; font-size:1.1rem; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--c-border);">Envíanos un mensaje</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Nombre *</label>
+              <input type="text" placeholder="Tu nombre completo">
+            </div>
+            <div class="form-field">
+              <label>Empresa</label>
+              <input type="text" placeholder="Nombre de tu empresa">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Email *</label>
+              <input type="email" placeholder="tu@email.com">
+            </div>
+            <div class="form-field">
+              <label>Teléfono</label>
+              <input type="tel" placeholder="+34 600 000 000">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Motivo de contacto</label>
+            <select>
+              <option value="">Selecciona una opción</option>
+              <option>Solicitar presupuesto</option>
+              <option>Información sobre productos</option>
+              <option>Pedido al por mayor</option>
+              <option>Producción a medida</option>
+              <option>Asesoría técnica</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Mensaje *</label>
+            <textarea rows="5" placeholder="Cuéntanos qué necesitas: tipo de prenda, volumen aproximado, plazo, requisitos técnicos..."></textarea>
+          </div>
+          <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:1.25rem;">
+            <input type="checkbox" id="rgpd" style="width:auto; flex-shrink:0;">
+            <label for="rgpd" style="font-size:.78rem; color:var(--c-muted); text-transform:none; letter-spacing:0; font-family:'Barlow',sans-serif; margin:0;">He leído y acepto la <a href="#" style="color:var(--c-blue);">política de privacidad</a>.</label>
+          </div>
+          <button type="button" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="sendContact()">Enviar mensaje →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">Textils Montblanc, S.A.</div>
+        <p class="footer-tagline">Fabricación de ropa técnica para deportes de montaña desde 1985. Igualada, Barcelona.</p>
+        <div class="footer-cert">
+          <span>ISO 9001</span>
+          <span>OEKO-TEX® 100</span>
+          <span>GRS Certified</span>
+          <span>Gore-Tex® Partner</span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Catálogo</h5>
+        <ul>
+          <li><a href="#products">Shell & Hardshell</a></li>
+          <li><a href="#products">Midlayer</a></li>
+          <li><a href="#products">Base Layer</a></li>
+          <li><a href="#products">Accesorios</a></li>
+          <li><a href="#products">Producción a medida</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Empresa</h5>
+        <ul>
+          <li><a href="#about">Sobre nosotros</a></li>
+          <li><a href="#services">Servicios B2B</a></li>
+          <li><a href="#about">Historia</a></li>
+          <li><a href="#about">Valores</a></li>
+          <li><a href="#contact">Trabaja con nosotros</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Aviso legal</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="#">Política de cookies</a></li>
+          <li><a href="#">Condiciones de venta</a></li>
+          <li><a href="#contact">Contacto</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bar">
+      <span>© 2025 Textils Montblanc, S.A. · CIF A12345678 · Todos los derechos reservados.</span>
+      <span>Polígono Industrial Les Comes · 08700 Igualada, Barcelona · España</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ PRODUCT MODAL ══ -->
+<div class="modal-overlay" id="prodModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Nombre del tejido</h3>
+      <button type="button" class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-thumb" id="modalThumb"></div>
+      <p id="modalDesc" style="font-size:.9rem; color:#3A3D45; line-height:1.7; margin-bottom:1.25rem;"></p>
+      <table class="spec-table" id="modalSpecs"></table>
+    </div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toastMsg">Añadido al pedido</span>
+  <div class="toast-bar"></div>
+</div>
+
+<script>
+/* ── DATA ── */
+const products = [
+  { id:1, cat:'shell', name:'ALPENGLOW PRO', sub:'Hardshell 3 capas', desc:'Membrana laminada Gore-Tex® de 3 capas con costuras selladas, impermeabilidad superior a 30.000 mm c.a. y respirabilidad activa. Ideal para chubasqueros y cortavientos de alta montaña.', bg:'#E8EFFE', icon:'🥾', moq:50, weight:'180 g/m²', specs:{Impermeabilidad:'30.000 mm c.a.','Transpirabilidad':'10.000 g/m²/24h','Gramaje':'180 g/m²','Composición':'100% Nylon + membrana Gore-Tex®',Costuras:'Termoselladas (5-tape)','Tratamiento DWR':'Sí','Norma EN':'EN 343:2019',MOQ:'50 unidades',Colores:'Personalizable'}, tags:['shell','custom'] },
+  { id:2, cat:'shell', name:'TORM SHIELD II', sub:'Softshell stretch', desc:'Tela softshell de alta elasticidad con tratamiento DWR de nueva generación. Resistencia al viento > 95% y confort superior para actividades de media montaña.', bg:'#E8F5EE', icon:'🏔️', moq:100, weight:'245 g/m²', specs:{Elasticidad:'4 direcciones','Impermeabilidad':'10.000 mm c.a.','Transpirabilidad':'8.000 g/m²/24h','Gramaje':'245 g/m²','Composición':'87% Poliéster / 13% Elastano',DWR:'Flúor-free',MOQ:'100 uds.'}, tags:['shell','custom'] },
+  { id:3, cat:'mid', name:'INSULOFT 200', sub:'Forro polar técnico', desc:'Polar técnico de alto rendimiento con fibra Polartec® 200 series. Óptima relación calor/peso para uso como capa intermedia en condiciones alpinas.', bg:'#FEF3E8', icon:'🧥', moq:75, weight:'200 g/m²', specs:{Material:'Polartec® 200','Gramaje':'200 g/m²','Retención térmica':'Alta','Secado rápido':'Sí','Antiestático':'Sí','Composición':'100% Poliéster reciclado',MOQ:'75 uds.',Certificación:'GRS Certified'}, tags:['mid','custom'] },
+  { id:4, cat:'mid', name:'THERMOSTRETCH', sub:'Primaloft® midlayer', desc:'Capa aislante con relleno Primaloft® Gold 60 g que mantiene el calor incluso húmeda. Peso mínimo, compresibilidad máxima.', bg:'#F0E8FE', icon:'❄️', moq:50, weight:'— (con relleno)', specs:{Relleno:'Primaloft® Gold 60 g','Exterior':'Ripstop Nylon 20D','Forro':'Tricot 100% Poliéster','Resistencia agua':'+50 lavados DWR','Temp. confort':'-10°C / 0°C',MOQ:'50 uds.'}, tags:['mid'] },
+  { id:5, cat:'base', name:'MERINO X-DRY 150', sub:'Base layer lana merina', desc:'Tejido punto de lana merina 17,5 micras mezclado con fibra Tencel™ para base layer de máximo confort y transpiración. Antibacteriano natural, ideal para actividad intensa.', bg:'#FEE8E8', icon:'🐑', moq:100, weight:'150 g/m²', specs:{Composición:'80% Lana merina / 20% Tencel™',Micronaje:'17,5 μm','Gramaje':'150 g/m²',Antibacteriano:'Natural','Temperatura':'-5°C / +10°C',Certificación:'OEKO-TEX® 100',MOQ:'100 uds.'}, tags:['base'] },
+  { id:6, cat:'base', name:'ACTIVE MESH 130', sub:'Malla técnica sintética', desc:'Estructura mesh de doble cara con zona plana en la capa exterior y nido de abeja en la interior para máxima evacuación del sudor. Secado ultrarápido.', bg:'#E8FEF0', icon:'🌬️', moq:150, weight:'130 g/m²', specs:{Composición:'100% Poliéster reciclado','Gramaje':'130 g/m²','Estructura':'Doble cara mesh','Secado rápido':'< 30 min','UPF':'UPF 30+',Certificación:'GRS + OEKO-TEX®',MOQ:'150 uds.'}, tags:['base','custom'] },
+  { id:7, cat:'acc', name:'SUMMIT CAP FABRIC', sub:'Tejido para gorros técnicos', desc:'Punto canalé técnico con microfibra interior y exterior rip-stop para gorros y prendas de cabeza. Stretch en 4 direcciones y plano en 4 agujas.', bg:'#FEF8E8', icon:'🧢', moq:200, weight:'220 g/m²', specs:{Composición:'65% Nylon / 35% Elastano',Estructura:'Canalé / Rip-stop','Gramaje':'220 g/m²',Stretch:'4 direcciones','Talla única':'Sí',MOQ:'200 uds.'}, tags:['acc'] },
+  { id:8, cat:'custom', name:'TEJIDO A MEDIDA', sub:'Desarrollo exclusivo', desc:'Desarrollamos tu tejido técnico desde cero: composición, gramaje, estructura y acabados según tus especificaciones. Incluye ficha técnica, muestra y test de laboratorio.', bg:'#1C2533', icon:'⚙️', moq:300, weight:'A definir', specs:{'Mín. desarrollo':'300 m lineales','Tiempo de desarrollo':'4–8 semanas','Incluye':'Ficha técnica + muestra + test',Personalización:'Completa','Certificaciones':'A solicitud',Precio:'Consultar'}, tags:['custom'] },
+];
+
+/* ── CART ── */
+const cart = {};
+
+function renderProducts(filter='all') {
+  const grid = document.getElementById('prodGrid');
+  const filtered = filter === 'all' ? products : products.filter(p => p.tags.includes(filter));
+  grid.innerHTML = filtered.map(p => `
+    <div class="prod-card" data-cat="${p.cat}">
+      <div class="prod-thumb" style="background:${p.bg};">
+        <div class="prod-thumb-inner">${p.icon}</div>
+        <div class="prod-thumb-label">${p.sub}</div>
+        ${p.cat==='custom' ? `<div class="prod-badge"><span class="tag tag-dark">A medida</span></div>` : ''}
+      </div>
+      <div class="prod-body">
+        <div class="prod-category">${p.sub}</div>
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-desc">${p.desc.slice(0,90)}…</div>
+        <div class="prod-meta">
+          <div>
+            <div class="prod-moq">MOQ: ${p.moq} uds.</div>
+            <div class="prod-weight">${p.weight}</div>
+          </div>
+          <div style="display:flex;gap:.5rem;">
+            <button type="button" class="prod-action" onclick="openModal(${p.id})">Ver ficha →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterCat(cat, el) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderProducts(cat);
+}
+
+/* ── ORDER LINES ── */
+const orderRefs = [
+  { id:1, ref:'TM-AP-001', name:'Alpenglow Pro 3L', price:28.50 },
+  { id:3, ref:'TM-IN-001', name:'Insuloft 200 Polar', price:14.90 },
+  { id:5, ref:'TM-BL-001', name:'Merino X-Dry 150', price:19.80 },
+];
+
+function renderOrderLines() {
+  const el = document.getElementById('orderLines');
+  el.innerHTML = orderRefs.map(r => `
+    <div class="order-line">
+      <div>
+        <div class="ol-name">${r.name}</div>
+        <div class="ol-ref">Ref. ${r.ref}</div>
+      </div>
+      <input class="ol-qty" type="number" min="0" max="9999" value="${cart[r.id]||0}" placeholder="0" oninput="updateCart(${r.id}, this.value)">
+      <div class="ol-price" id="linePrice${r.id}">${cart[r.id] ? '€'+(r.price*(cart[r.id]||0)).toFixed(2) : '—'}</div>
+      <button type="button" class="ol-remove" onclick="removeCartItem(${r.id})">✕</button>
+    </div>
+  `).join('') + `<div style="padding:1rem 0; text-align:right;">
+    <button type="button" class="btn btn-orange" style="font-size:.82rem;" onclick="document.getElementById('quoteForm').scrollIntoView({behavior:'smooth'})">
+      Completar solicitud →
+    </button>
+  </div>`;
+}
+
+function updateCart(id, val) {
+  const qty = parseInt(val) || 0;
+  if (qty > 0) cart[id] = qty; else delete cart[id];
+  const ref = orderRefs.find(r => r.id === id);
+  document.getElementById('linePrice'+id).textContent = qty > 0 ? '€'+(ref.price*qty).toFixed(2) : '—';
+  renderCartSummary();
+}
+
+function removeCartItem(id) {
+  delete cart[id];
+  document.querySelector(`[oninput*="${id}"]`).value = 0;
+  document.getElementById('linePrice'+id).textContent = '—';
+  renderCartSummary();
+}
+
+function renderCartSummary() {
+  const body = document.getElementById('cartBody');
+  const entries = Object.entries(cart);
+  const badge = document.getElementById('cartBadge');
+  badge.textContent = entries.length;
+  if (!entries.length) {
+    body.innerHTML = '<p style="font-size:.85rem;color:var(--c-muted);">Añade referencias desde el catálogo.</p>';
+    return;
+  }
+  let subtotal = 0;
+  const rows = entries.map(([id, qty]) => {
+    const ref = orderRefs.find(r => r.id == id);
+    if (!ref) return '';
+    const total = ref.price * qty;
+    subtotal += total;
+    return `<div class="cs-row"><span>${ref.name} ×${qty}</span><span>€${total.toFixed(2)}</span></div>`;
+  }).join('');
+  body.innerHTML = rows
+    + `<div class="cs-row" style="color:var(--c-muted);font-size:.8rem;"><span>IVA (21%)</span><span>€${(subtotal*.21).toFixed(2)}</span></div>`
+    + `<div class="cs-row total"><span>Total estimado</span><span>€${(subtotal*1.21).toFixed(2)}</span></div>`
+    + `<div class="cs-note">💡 Este es un precio orientativo. Recibirás un presupuesto firme en menos de 24 h laborables.</div>`;
+}
+
+/* ── MODAL ── */
+function openModal(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modalTitle').textContent = p.name + ' — ' + p.sub;
+  document.getElementById('modalThumb').style.cssText = `background:${p.bg};`;
+  document.getElementById('modalThumb').innerHTML = `<span style="font-size:4rem;">${p.icon}</span><span style="font-family:'Oswald',sans-serif;font-size:.9rem;font-weight:600;text-transform:uppercase;opacity:.4;">${p.sub}</span>`;
+  document.getElementById('modalDesc').textContent = p.desc;
+  document.getElementById('modalSpecs').innerHTML = Object.entries(p.specs).map(([k,v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  document.getElementById('modalActions').innerHTML = `
+    <button type="button" class="btn btn-primary" onclick="addToOrder(${p.id});closeModal()">+ Añadir al pedido</button>
+    <a href="#b2b" class="btn btn-outline" onclick="closeModal()">Solicitar presupuesto</a>
+  `;
+  document.getElementById('prodModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('prodModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function addToOrder(id) {
+  const ref = orderRefs.find(r => r.id === id);
+  if (!ref) { showToast('Solicita presupuesto para este tejido'); return; }
+  cart[id] = (cart[id]||0) + 50;
+  renderOrderLines();
+  renderCartSummary();
+  showToast('✓ Añadido al pedido · +50 uds.');
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  t.querySelector('.toast-bar').style.animation = 'none';
+  setTimeout(() => { t.querySelector('.toast-bar').style.animation = 'toastBar 3s linear forwards'; }, 50);
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ── FORMS ── */
+function submitQuote() {
+  showToast('✓ Solicitud enviada · Respuesta en < 24 h');
+}
+function sendContact() {
+  showToast('✓ Mensaje enviado · Gracias por contactarnos');
+}
+
+/* ── NAV SCROLL ── */
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+/* ── MODAL CLOSE OUTSIDE ── */
+document.getElementById('prodModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+/* ── INIT ── */
+renderProducts();
+renderOrderLines();
+renderCartSummary();
+</script>
+</body>
+</html>
